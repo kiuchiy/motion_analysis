@@ -37,7 +37,7 @@ class TrackHumans:
             self.humans_id = self.search_nearest(humans, self.humans_post, self.humans_id)
             self.humans_current = np.concatenate((humans_current, np.c_[self.humans_id]), axis=1)
             self.humans_tracklet = (np.concatenate((self.humans_tracklet[self.humans_tracklet[:, 0] > (frame - 30)],
-                                                   self.humans_current)))  # .astype(int)
+                                                   self.humans_current))).astype(int)
 
         self.humans_post = humans
 
