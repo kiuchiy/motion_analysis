@@ -3,12 +3,6 @@ from scipy.spatial import distance
 from collections import Counter
 
 
-def moving_average(a, n=3) :
-    ret = np.cumsum(a, dtype=float, axis=0)
-    ret[n:] = ret[n:] - ret[:-n]
-    return ret[n - 1:] / n
-
-
 class TrackHumans:
     def __init__(self, start_frame=0,):
         self.start = start_frame

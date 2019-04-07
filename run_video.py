@@ -37,6 +37,12 @@ except ImportError as e:
     raise e
 
 
+def moving_average(a, n=3) :
+    ret = np.cumsum(a, dtype=float, axis=0)
+    ret[n:] = ret[n:] - ret[:-n]
+    return ret[n - 1:] / n
+
+
 def run_video(video, path='', resize='432x368', model='cmu', resize_out_ratio=4.0, orientation='horizontal',
                    cog="skip", cog_color='black', cog_size='M', showBG=True, start_frame=0, debug=False, plot_image=""):
     start_frame=0
@@ -102,10 +108,11 @@ def run_video(video, path='', resize='432x368', model='cmu', resize_out_ratio=4.
         # keypoints
         humans = datum.poseKeypoints
 
-        # calculate cog
+        # calculate and save data
         t = time.time()
+        # calculate cog
         bodies_cog = ma.multi_bodies_cog(humans=humans)
-        bodies_cog = bodies_cog.astype(int)
+        # bodies_cog = bodies_cog.astype(int)
         bodies_cog[np.isnan(bodies_cog[:, :, :])] = 0
         # calculate track
         track.track_humans(frame_no, humans)
@@ -115,23 +122,28 @@ def run_video(video, path='', resize='432x368', model='cmu', resize_out_ratio=4.
         df_frame = pd.DataFrame(humans_feature.round(4))
         df_frame.to_csv(csv_file, index=False, header=None, mode='a')
         time_cog = time.time() - t
+
+        # logging to check progress and speed
         if frame_no % int(caps_fps) == 0:
             logger.info('calculation of cog in %.4f seconds.' % time_cog)
-
-        # check the time to estimation
-        if (frame_no % int(caps_fps)) == 0:
             logger.info("Now estimating at:" + str(int(frame_no / caps_fps)) + "[sec]")
             logger.info('inference in %.4f seconds.' % time_estimation)
             logger.debug('shape of image: ' + str(image.shape))
             logger.debug(str(humans))
 
+        # PLOT Pictures for movie
         img = datum.cvOutputData
+
+        # plot cog & foot lines
         cog_size = (calc_torso_length(humans) / 8).astype(int)
         for i in range(len(bodies_cog)):
             cv2.circle(img, (bodies_cog[i, 14, 0], bodies_cog[i, 14, 1]), cog_size[i, i], color=(0, 0, 0), thickness=-1)
-            dotline(img, (bodies_cog[i, 6, 0], 0), (bodies_cog[i, 6, 0], h_pxl), color=(10, 10, 10), thickness=2)
-            dotline(img, (bodies_cog[i, 7, 0], 0), (bodies_cog[i, 7, 0], h_pxl), color=(10, 10, 10), thickness=2)
+            if bodies_cog[i, 6, 0]:
+                dotline(img, (bodies_cog[i, 6, 0], 0), (bodies_cog[i, 6, 0], h_pxl), color=(10, 10, 10), thickness=2)
+            if bodies_cog[i, 7, 0]:
+                dotline(img, (bodies_cog[i, 7, 0], 0), (bodies_cog[i, 7, 0], h_pxl), color=(10, 10, 10), thickness=2)
 
+        # plot hands trajectories
         for i, hum in enumerate(np.sort(track.humans_id)):
             df_human = track.humans_tracklet[track.humans_tracklet[:, track.clm_num] == hum]
             df_human = df_human.astype(int)
@@ -140,6 +152,7 @@ def run_video(video, path='', resize='432x368', model='cmu', resize_out_ratio=4.
             trajectories = np.array([(gdf[7 * 3 + 1], gdf[7 * 3 + 2]) for gdf in df_human if gdf[7 * 3 + 1]])
             cv2.polylines(img, [trajectories], False, (0, 0, 0), 3, cv2.LINE_4)
 
+        # save figure
         cv2.imwrite(os.path.join(path_png_estimated,
                                  video.split('.')[-2] + '{:06d}'.format(frame_no) + ".png"), img)
 

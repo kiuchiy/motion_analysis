@@ -111,7 +111,7 @@ class MotionAnalysis():
                             ])
             segments_cog.append(cog)
             cogs.append(segments_cog)
-        return np.array(cogs)
+        return np.array(cogs).astype(int)
 
     def motion(self, human, human_motion):
         """
