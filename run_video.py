@@ -128,7 +128,7 @@ def run_video(video, path='', resize='432x368', model='cmu', resize_out_ratio=4.
         img = datum.cvOutputData
         cog_size = (calc_torso_length(humans) / 6).astype(int)
         for i in range(len(bodies_cog)):
-            cv2.circle(img, (bodies_cog[i, 14, 0], bodies_cog[i, 14, 1]), cog_size, color=(0, 0, 0), thickness=-1)
+            cv2.circle(img, (bodies_cog[i, 14, 0], bodies_cog[i, 14, 1]), cog_size[i], color=(0, 0, 0), thickness=-1)
             dotline(img, (bodies_cog[i, 6, 0], 0), (bodies_cog[i, 6, 0], h_pxl), color=(10, 10, 10), thickness=2)
             dotline(img, (bodies_cog[i, 7, 0], 0), (bodies_cog[i, 7, 0], h_pxl), color=(10, 10, 10), thickness=2)
 
