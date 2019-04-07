@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+from scipy.spatial import distance
 
 # from tf-pose-estimation.tf_pose.common import CocoPart
 
@@ -24,6 +25,23 @@ def calc_cog(segments, rates):
     else:
         seg_cog = [0,0,0]
     return seg_cog
+
+
+def calc_torso_length(humans):
+    torso = []
+    for a_human in humans:
+        if a_human[1, 2] != 0:
+            neck_cog = a_human[1]
+        else:
+            neck_cog = calc_cog(np.vstack((a_human[2], a_human[5])), [1, 1])
+        if a_human[8, 2] != 0:
+            hip_cog = a_human[8]
+        else:
+            hip_cog = calc_cog(np.vstack((a_human[8], a_human[12])), [1, 1])
+        torso.append(np.vstack((neck_cog, hip_cog)))
+        torso = np.array(torso)
+    length = distance.cdist(torso[:, 0, :2], torso[:, 1, :2])
+    return length
 
 
 def segment_cog(a_human):

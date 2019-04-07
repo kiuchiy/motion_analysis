@@ -12,6 +12,9 @@ import pandas as pd
 from logging import getLogger, StreamHandler, Formatter
 from modules.motion_analysis import MotionAnalysis
 from modules.track_humans import TrackHumans
+from modules.humans_to_array import calc_torso_length
+from importlib import reload as reload
+from modules.draw_cv import dotline
 
 # Import Openpose (Windows/Ubuntu/OSX)
 dir_path = "./" #os.path.dirname(os.path.realpath(__file__))
@@ -37,6 +40,11 @@ except ImportError as e:
 def run_video(video, path='', resize='432x368', model='cmu', resize_out_ratio=4.0, orientation='horizontal',
                    cog="skip", cog_color='black', cog_size='M', showBG=True, start_frame=0, debug=False, plot_image=""):
     start_frame=0
+    try:
+        logging.shutdown()
+        reload(logging)
+    except Exception as e:
+        raise e
     logger = getLogger("APP_LOG")
     stream_handler = StreamHandler()
     if debug:
@@ -78,7 +86,6 @@ def run_video(video, path='', resize='432x368', model='cmu', resize_out_ratio=4.
 
     # processing video
     frame_no = 0
-    # cmap = plt.get_cmap("tab10")
     while cap.isOpened():
         ret_val, image = cap.read()
         if not ret_val:
@@ -89,8 +96,7 @@ def run_video(video, path='', resize='432x368', model='cmu', resize_out_ratio=4.
         # estimate pose
         t = time.time()
         datum = op.Datum()
-#         imageToProcess = cv2.imread(image)
-        datum.cvInputData = image  # imageToProcess
+        datum.cvInputData = image
         opWrapper.emplaceAndPop([datum])
         time_estimation = time.time() - t
         # keypoints
@@ -99,6 +105,7 @@ def run_video(video, path='', resize='432x368', model='cmu', resize_out_ratio=4.
         # calculate cog
         t = time.time()
         bodies_cog = ma.multi_bodies_cog(humans=humans)
+        bodies_cog = bodies_cog.astype(int)
         bodies_cog[np.isnan(bodies_cog[:, :, :])] = 0
         # calculate track
         track.track_humans(frame_no, humans)
@@ -119,16 +126,18 @@ def run_video(video, path='', resize='432x368', model='cmu', resize_out_ratio=4.
             logger.debug(str(humans))
 
         img = datum.cvOutputData
+        cog_size = (calc_torso_length(humans) / 6).astype(int)
         for i in range(len(bodies_cog)):
-            cv2.circle(img, (int(bodies_cog[i, 14, 0]), int(bodies_cog[i, 14, 1])), 20, color=(0, 0, 0), thickness=-1)
-        #     plt.vlines(bodies_cog[:, 6, 0] * w_pxl, ymin=0, ymax=h_pxl, linestyles='dashed')
-        #     plt.vlines(bodies_cog[:, 7, 0] * w_pxl, ymin=0, ymax=h_pxl, linestyles='dashed')
+            cv2.circle(img, (bodies_cog[i, 14, 0], bodies_cog[i, 14, 1]), cog_size, color=(0, 0, 0), thickness=-1)
+            dotline(img, (bodies_cog[i, 6, 0], 0), (bodies_cog[i, 6, 0], h_pxl), color=(10, 10, 10), thickness=2)
+            dotline(img, (bodies_cog[i, 7, 0], 0), (bodies_cog[i, 7, 0], h_pxl), color=(10, 10, 10), thickness=2)
 
         for i, hum in enumerate(np.sort(track.humans_id)):
             df_human = track.humans_tracklet[track.humans_tracklet[:, track.clm_num] == hum]
-            trajectories = np.array([(int(gdf[4 * 3 + 1]), int(gdf[4 * 3 + 2])) for gdf in df_human if gdf[4 * 3 + 1]])
+            df_human = df_human.astype(int)
+            trajectories = np.array([(gdf[4 * 3 + 1], gdf[4 * 3 + 2]) for gdf in df_human if gdf[4 * 3 + 1]])
             cv2.polylines(img, [trajectories], False, (0, 0, 0), 3, cv2.LINE_4)
-            trajectories = np.array([(int(gdf[7 * 3 + 1]), int(gdf[7 * 3 + 2])) for gdf in df_human if gdf[7 * 3 + 1]])
+            trajectories = np.array([(gdf[7 * 3 + 1], gdf[7 * 3 + 2]) for gdf in df_human if gdf[7 * 3 + 1]])
             cv2.polylines(img, [trajectories], False, (0, 0, 0), 3, cv2.LINE_4)
 
         cv2.imwrite(os.path.join(path_png_estimated,
