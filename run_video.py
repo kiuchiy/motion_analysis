@@ -47,7 +47,7 @@ def run_video(video, path='', resize='432x368', model='cmu', resize_out_ratio=4.
         stream_handler.setLevel(logging.INFO)
     handler_format = Formatter('%(name)s, %(levelname)s:\t%(message)s')
     stream_handler.setFormatter(handler_format)
-#     logger.addHandler(stream_handler)
+    logger.addHandler(stream_handler)
 
     # setting directories to output
     path_movie_out = os.path.join(path, 'movies_estimated')
@@ -120,16 +120,16 @@ def run_video(video, path='', resize='432x368', model='cmu', resize_out_ratio=4.
 
         img = datum.cvOutputData
         for i in range(len(bodies_cog)):
-            cv2.circle(img, (int(bodies_cog[i, 14, 0]), int(bodies_cog[i, 14, 1])), 5, color=(0, 0, 0), thickness=-1)
+            cv2.circle(img, (int(bodies_cog[i, 14, 0]), int(bodies_cog[i, 14, 1])), 20, color=(0, 0, 0), thickness=-1)
         #     plt.vlines(bodies_cog[:, 6, 0] * w_pxl, ymin=0, ymax=h_pxl, linestyles='dashed')
         #     plt.vlines(bodies_cog[:, 7, 0] * w_pxl, ymin=0, ymax=h_pxl, linestyles='dashed')
 
         for i, hum in enumerate(np.sort(track.humans_id)):
             df_human = track.humans_tracklet[track.humans_tracklet[:, track.clm_num] == hum]
-            trajectories = np.array([(int(gdf[4 * 3 + 1]), int(gdf[4 * 3 + 2])) for gdf in df_human])
-            cv2.polylines(img, [trajectories], False, (0,0,0), 3, cv2.LINE_4)
-            trajectories = np.array([(int(gdf[7 * 3 + 1]), int(gdf[7 * 3 + 2])) for gdf in df_human])
-            cv2.polylines(img, [trajectories], False, (0,0,0), 3, cv2.LINE_4)
+            trajectories = np.array([(int(gdf[4 * 3 + 1]), int(gdf[4 * 3 + 2])) for gdf in df_human if gdf[4 * 3 + 1]])
+            cv2.polylines(img, [trajectories], False, (0, 0, 0), 3, cv2.LINE_4)
+            trajectories = np.array([(int(gdf[7 * 3 + 1]), int(gdf[7 * 3 + 2])) for gdf in df_human if gdf[7 * 3 + 1]])
+            cv2.polylines(img, [trajectories], False, (0, 0, 0), 3, cv2.LINE_4)
 
         cv2.imwrite(os.path.join(path_png_estimated,
                                  video.split('.')[-2] + '{:06d}'.format(frame_no) + ".png"), img)
