@@ -101,9 +101,8 @@ def run_video(video, path='', resize='432x368', model='cmu', resize_out_ratio=4.
         bodies_cog = ma.multi_bodies_cog(humans=humans)
         bodies_cog[np.isnan(bodies_cog[:, :, :])] = 0
         # calculate track
-        # track.track_humans(frame_no, humans)
-        # humans_feature = np.concatenate((track.humans_current,
-        humans_feature = np.concatenate((humans,
+        track.track_humans(frame_no, humans)
+        humans_feature = np.concatenate((track.humans_current,
                                          bodies_cog.reshape(bodies_cog.shape[0],
                                                             bodies_cog.shape[1] * bodies_cog.shape[2])), axis=1)
         df_frame = pd.DataFrame(humans_feature.round(4))
