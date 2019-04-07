@@ -112,14 +112,13 @@ def run_video(video, path='', resize='432x368', model='cmu', resize_out_ratio=4.
         t = time.time()
         # calculate cog
         bodies_cog = ma.multi_bodies_cog(humans=humans)
-        # bodies_cog = bodies_cog.astype(int)
-        bodies_cog[np.isnan(bodies_cog[:, :, :])] = 0
+        bodies_cog[np.isnan(bodies_cog[:, :, :])] = 0  # to plot, fill nan
         # calculate track
         track.track_humans(frame_no, humans)
         humans_feature = np.concatenate((track.humans_current,
                                          bodies_cog.reshape(bodies_cog.shape[0],
                                                             bodies_cog.shape[1] * bodies_cog.shape[2])), axis=1)
-        df_frame = pd.DataFrame(humans_feature.round(4))
+        df_frame = pd.DataFrame(humans_feature.round())
         df_frame.to_csv(csv_file, index=False, header=None, mode='a')
         time_cog = time.time() - t
 
@@ -162,6 +161,7 @@ def run_video(video, path='', resize='432x368', model='cmu', resize_out_ratio=4.
         if cv2.waitKey(1) == 27:
             break
     cv2.destroyAllWindows()
+
     logger.info("finish estimation & start encoding")
     cmd = ["ffmpeg", "-r", str(caps_fps), "-start_number", str(start_frame),
            "-i", os.path.join(path_png_estimated, video.split('.')[-2] + "%06d.png"),
