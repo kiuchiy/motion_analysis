@@ -34,7 +34,8 @@ except ImportError as e:
     raise e
 
 
-def run_video(path, video, debug):
+def run_video(video, path='', resize='432x368', model='cmu', resize_out_ratio=4.0, orientation='horizontal',
+                   cog="skip", cog_color='black', cog_size='M', showBG=True, start_frame=0, debug=False, plot_image=""):
     start_frame=0
     logger = getLogger("APP_LOG")
     stream_handler = StreamHandler()
@@ -145,3 +146,27 @@ def run_video(path, video, debug):
            os.path.join(path_movie_out, video.split('.')[-2] + "_track.mp4")]
     subprocess.call(cmd)
     logger.debug('finished+')
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='tf-pose-estimation Video')
+    parser.add_argument('--path', type=str, default="")
+    parser.add_argument('--video', type=str, default='')
+    parser.add_argument('--resize', type=str, default='0x0', help='network input resize. default=432x368')
+    parser.add_argument('--model', type=str, default='cmu', help='cmu / mobilenet_thin')
+    parser.add_argument('--showBG', type=bool, default=True, help='False to show skeleton only.')
+    parser.add_argument('--start_frame', type=int, default=0)
+    parser.add_argument('--cog', type=str, default="")
+    parser.add_argument('--cog_color', type=str, default='black')
+    parser.add_argument('--cog_size', type=str, default='M')
+    parser.add_argument('--resize_out_ratio', type=float, default=4.0,
+                        help='if provided, resize heatmaps before they are post-processed. default=1.0')
+    parser.add_argument('--debug', type=bool, default=False)
+    parser.add_argument('--orientation', type=str, default="horizontal")
+    parser.add_argument('--plot_image', type=str, default="")
+    args = parser.parse_args()
+    print(str(args.cog))
+    run_video(video=args.video, path=args.path, resize=args.resize, model=args.model, orientation=args.orientation,
+                        resize_out_ratio=args.resize_out_ratio, showBG=args.showBG, plot_image=args.plot_image,
+                        cog=args.cog, cog_color=args.cog_color, cog_size=args.cog_size, start_frame=args.start_frame, debug=args.debug)
+
