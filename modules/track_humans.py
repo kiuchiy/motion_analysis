@@ -3,6 +3,12 @@ from scipy.spatial import distance
 from collections import Counter
 
 
+def moving_average(a, n=3) :
+    ret = np.cumsum(a, dtype=float, axis=0)
+    ret[n:] = ret[n:] - ret[:-n]
+    return ret[n - 1:] / n
+
+
 class TrackHumans:
     def __init__(self, start_frame=0,):
         self.start = start_frame
@@ -30,8 +36,9 @@ class TrackHumans:
         else:
             self.humans_id = self.search_nearest(humans, self.humans_post, self.humans_id)
             self.humans_current = np.concatenate((humans_current, np.c_[self.humans_id]), axis=1)
-            self.humans_tracklet = np.concatenate((self.humans_tracklet[self.humans_tracklet[:, 0] > (frame - 30)],
-                                                   self.humans_current))
+            self.humans_tracklet = moving_average(np.concatenate((self.humans_tracklet[self.humans_tracklet[:, 0] > (frame - 32)],
+                                                   self.humans_current))).astype(int)
+
         self.humans_post = humans
 
     @staticmethod

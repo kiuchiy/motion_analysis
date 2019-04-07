@@ -41,7 +41,7 @@ def calc_torso_length(humans):
         if neck_cog[0]*hip_cog[0] > 0:
             torso.append(np.vstack((neck_cog, hip_cog)))
         else:
-            torso.append(np.array([[0,0,0],[0,0,0]]))
+            torso.append(np.array([[0, 0, 0],[0, 0, 0]]))
     torso = np.array(torso)
     length = distance.cdist(torso[:, 0, :2], torso[:, 1, :2])
     return length

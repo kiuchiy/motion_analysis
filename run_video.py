@@ -134,7 +134,6 @@ def run_video(video, path='', resize='432x368', model='cmu', resize_out_ratio=4.
 
         for i, hum in enumerate(np.sort(track.humans_id)):
             df_human = track.humans_tracklet[track.humans_tracklet[:, track.clm_num] == hum]
-            df_human = df_human.astype(int)
             trajectories = np.array([(gdf[4 * 3 + 1], gdf[4 * 3 + 2]) for gdf in df_human if gdf[4 * 3 + 1]])
             cv2.polylines(img, [trajectories], False, (0, 0, 0), 3, cv2.LINE_4)
             trajectories = np.array([(gdf[7 * 3 + 1], gdf[7 * 3 + 2]) for gdf in df_human if gdf[7 * 3 + 1]])
