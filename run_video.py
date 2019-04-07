@@ -74,7 +74,7 @@ def run_video(video, path='', resize='432x368', model='cmu', resize_out_ratio=4.
         logger.info("ERROR: opening video stream or file")
     caps_fps = cap.get(cv2.CAP_PROP_FPS)
     ma = MotionAnalysis()
-    # track = TrackHumans(start_frame=start_frame)
+    track = TrackHumans(start_frame=start_frame)
 
     # processing video
     frame_no = 0
@@ -100,7 +100,10 @@ def run_video(video, path='', resize='432x368', model='cmu', resize_out_ratio=4.
         t = time.time()
         bodies_cog = ma.multi_bodies_cog(humans=humans)
         bodies_cog[np.isnan(bodies_cog[:, :, :])] = 0
-        humans_feature = np.concatenate((track.humans_current,
+        # calculate track
+        # track.track_humans(frame_no, humans)
+        # humans_feature = np.concatenate((track.humans_current,
+        humans_feature = np.concatenate((humans,
                                          bodies_cog.reshape(bodies_cog.shape[0],
                                                             bodies_cog.shape[1] * bodies_cog.shape[2])), axis=1)
         df_frame = pd.DataFrame(humans_feature.round(4))
@@ -108,7 +111,6 @@ def run_video(video, path='', resize='432x368', model='cmu', resize_out_ratio=4.
         time_cog = time.time() - t
         if frame_no % int(caps_fps) == 0:
             logger.info('calculation of cog in %.4f seconds.' % time_cog)
-        # track.track_humans(frame_no, humans)
 
         # check the time to estimation
         if (frame_no % int(caps_fps)) == 0:
