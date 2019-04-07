@@ -17,9 +17,12 @@ def calc_cog(segments, rates):
     segments[np.isnan(segments)] = 0
     rates = [rates[num] if segments[num, 2] > 0 else 0 for num in range(len(rates))]
     # rates = rates[~np.isnan(segments[:, 2])]
-    seg_cog = (np.dot(rates, segments[:, :2])) / sum(rates)
-    # print('cog_vals: ',seg_cog, '\nmean: ',np.mean(segments[:, 2]))
-    seg_cog = np.append(seg_cog, np.mean(segments[:, 2]))
+    if sum(rates):
+        seg_cog = (np.dot(rates, segments[:, :2])) / sum(rates)
+        # print('cog_vals: ',seg_cog, '\nmean: ',np.mean(segments[:, 2]))
+        seg_cog = np.append(seg_cog, np.mean(segments[:, 2]))
+    else:
+        seg_cog = [0,0,0]
     return seg_cog
 
 
