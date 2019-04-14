@@ -89,7 +89,7 @@ def run_video(video, path='', skip_cog=False, skip_track=False, cog_color='black
     track = TrackHumans(start_frame=start_frame)
     # CSV FILE SETTING
     segments = ["Nose", "Neck", "RShoulder", "RElbow", "RWrist", "LShoulder", "LElbow", "LWrist",
-                "MidHip", "RHip", "RKnee", "RAnkle", "LHip", "LKnee", "LAnkle", "Background"
+                "MidHip", "RHip", "RKnee", "RAnkle", "LHip", "LKnee", "LAnkle",
                 "REye", "LEye", "REar", "LEar", "LBigToe", "LSmallToe", "LHeel", "RBigToe", "RSmallToe", "RHeel",
                 "head_cog", "torso_cog", "r_thigh_cog", "l_thigh_cog", "r_leg_cog", "l_leg_cog", "r_foot_cog", "l_foot_cog",
                 "r_arm_cog", "l_arm_cog", "r_forearm_cog", "l_forearm_cog", "r_hand_cog", "l_hand_cog"]
@@ -126,7 +126,7 @@ def run_video(video, path='', skip_cog=False, skip_track=False, cog_color='black
         humans_feature = np.concatenate((track.humans_current,
                                          bodies_cog.reshape(bodies_cog.shape[0],
                                                             bodies_cog.shape[1] * bodies_cog.shape[2])), axis=1)
-        df_frame = pd.DataFrame(humans_feature.round())
+        df_frame = pd.DataFrame(humans_feature.round(1))
         df_frame.to_csv(csv_file, index=False, header=None, mode='a')
         time_cog = time.time() - t
 
