@@ -14,7 +14,7 @@ from modules.motion_analysis import MotionAnalysis
 from modules.track_humans import TrackHumans
 from modules.humans_to_array import calc_torso_length
 from importlib import reload as reload
-from modules.draw_cv import dotline
+from modules.draw_cv import dotline, polydotline
 
 # Import Openpose (Windows/Ubuntu/OSX)
 dir_path = "./" #os.path.dirname(os.path.realpath(__file__))
@@ -43,9 +43,7 @@ def moving_average(a, n=3) :
     return ret[n - 1:] / n
 
 
-def run_video(video, path='', resize='432x368', model='cmu', resize_out_ratio=4.0, orientation='horizontal',
-                   cog="skip", cog_color='black', cog_size='M', showBG=True, start_frame=0, debug=False, plot_image=""):
-    start_frame=0
+def run_video(video, path='', skip_cog=False, skip_track=False, cog_color='black', start_frame=0, debug=False):
     try:
         logging.shutdown()
         reload(logging)
@@ -89,7 +87,14 @@ def run_video(video, path='', resize='432x368', model='cmu', resize_out_ratio=4.
     caps_fps = cap.get(cv2.CAP_PROP_FPS)
     ma = MotionAnalysis()
     track = TrackHumans(start_frame=start_frame)
-
+    # CSV FILE SETTING
+    segments = ["Nose", "Neck", "RShoulder", "RElbow", "RWrist", "LShoulder", "LElbow", "LWrist",
+                "MidHip", "RHip", "RKnee", "RAnkle", "LHip", "LKnee", "LAnkle",
+                "REye", "LEye", "REar", "LEar", "LBigToe", "LSmallToe", "LHeel", "RBigToe", "RSmallToe", "RHeel",
+                "head_cog", "torso_cog", "r_thigh_cog", "l_thigh_cog", "r_leg_cog", "l_leg_cog", "r_foot_cog", "l_foot_cog",
+                "r_arm_cog", "l_arm_cog", "r_forearm_cog", "l_forearm_cog", "r_hand_cog", "l_hand_cog"]
+    seg_columns = ['frame', 'human_id']
+    [seg_columns.extend([x + '_x', x + '_y', x + '_score']) for x in segments]
     # processing video
     frame_no = 0
     while cap.isOpened():
@@ -135,21 +140,25 @@ def run_video(video, path='', resize='432x368', model='cmu', resize_out_ratio=4.
 
         # plot cog & foot lines
         cog_size = (calc_torso_length(humans) / 8).astype(int)
-        for i in range(len(bodies_cog)):
-            cv2.circle(img, (bodies_cog[i, 14, 0], bodies_cog[i, 14, 1]), cog_size[i, i], color=(0, 0, 0), thickness=-1)
-            if bodies_cog[i, 6, 0]:
-                dotline(img, (bodies_cog[i, 6, 0], 0), (bodies_cog[i, 6, 0], h_pxl), color=(10, 10, 10), thickness=2)
-            if bodies_cog[i, 7, 0]:
-                dotline(img, (bodies_cog[i, 7, 0], 0), (bodies_cog[i, 7, 0], h_pxl), color=(10, 10, 10), thickness=2)
+        if not skip_cog:
+            for i in range(len(bodies_cog)):
+                cv2.circle(img, (bodies_cog[i, 14, 0], bodies_cog[i, 14, 1]), cog_size[i, i], color=(0, 0, 0), thickness=-1)
+                if bodies_cog[i, 6, 0]:
+                    dotline(img, (bodies_cog[i, 6, 0], 0), (bodies_cog[i, 6, 0], h_pxl), color=(10, 10, 10), thickness=2)
+                if bodies_cog[i, 7, 0]:
+                    dotline(img, (bodies_cog[i, 7, 0], 0), (bodies_cog[i, 7, 0], h_pxl), color=(10, 10, 10), thickness=2)
 
-        # plot hands trajectories
-        for i, hum in enumerate(np.sort(track.humans_id)):
-            df_human = track.humans_tracklet[track.humans_tracklet[:, track.clm_num] == hum]
-            df_human = df_human.astype(int)
-            trajectories = np.array([(gdf[4 * 3 + 1], gdf[4 * 3 + 2]) for gdf in df_human if gdf[4 * 3 + 1]])
-            cv2.polylines(img, [trajectories], False, (200, 200, int(i%3)*30), 3, cv2.LINE_4)
-            trajectories = np.array([(gdf[7 * 3 + 1], gdf[7 * 3 + 2]) for gdf in df_human if gdf[7 * 3 + 1]])
-            cv2.polylines(img, [trajectories], False, (int(i%3)*30, 200, int(i%3)*30), 3, cv2.LINE_4)
+        if not skip_track:
+            # plot hands trajectories
+            for i, hum in enumerate(np.sort(track.humans_id)):
+                df_human = track.humans_tracklet[track.humans_tracklet[:, track.clm_num] == hum]
+                df_human = df_human.astype(int)
+                trajectories = np.array([(gdf[4 * 3 + 1], gdf[4 * 3 + 2]) for gdf in df_human if gdf[4 * 3 + 1]])
+                # cv2.polylines(img, [trajectories], False, (200, 200, int(i%3)*30), 3, cv2.LINE_4)
+                cv2.polydotlines(img, [trajectories], (200, 200, int(i%3)*30))
+                trajectories = np.array([(gdf[7 * 3 + 1], gdf[7 * 3 + 2]) for gdf in df_human if gdf[7 * 3 + 1]])
+                # cv2.polylines(img, [trajectories], False, (int(i%3)*30, 200, int(i%3)*30), 3, cv2.LINE_4)
+                cv2.polydotlines(img, [trajectories], (200, 200, int(i%3)*30))
 
         # save figure
         cv2.imwrite(os.path.join(path_png_estimated,
@@ -175,21 +184,12 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='tf-pose-estimation Video')
     parser.add_argument('--path', type=str, default="")
     parser.add_argument('--video', type=str, default='')
-    parser.add_argument('--resize', type=str, default='0x0', help='network input resize. default=432x368')
-    parser.add_argument('--model', type=str, default='cmu', help='cmu / mobilenet_thin')
-    parser.add_argument('--showBG', type=bool, default=True, help='False to show skeleton only.')
     parser.add_argument('--start_frame', type=int, default=0)
-    parser.add_argument('--cog', type=str, default="")
+    parser.add_argument('--skip_track', type=bool, default=False)
+    parser.add_argument('--skip_cog', type=bool, default=False)
     parser.add_argument('--cog_color', type=str, default='black')
-    parser.add_argument('--cog_size', type=str, default='M')
-    parser.add_argument('--resize_out_ratio', type=float, default=4.0,
-                        help='if provided, resize heatmaps before they are post-processed. default=1.0')
     parser.add_argument('--debug', type=bool, default=False)
-    parser.add_argument('--orientation', type=str, default="horizontal")
-    parser.add_argument('--plot_image', type=str, default="")
     args = parser.parse_args()
-    print(str(args.cog))
-    run_video(video=args.video, path=args.path, resize=args.resize, model=args.model, orientation=args.orientation,
-                        resize_out_ratio=args.resize_out_ratio, showBG=args.showBG, plot_image=args.plot_image,
-                        cog=args.cog, cog_color=args.cog_color, cog_size=args.cog_size, start_frame=args.start_frame, debug=args.debug)
+    run_video(video=args.video, path=args.path, skip_cog=args.skip_cog, skip_track=args.skip_track,
+              cog_color=args.cog_color, start_frame=args.start_frame, debug=args.debug)
 
