@@ -27,7 +27,7 @@ class TrackHumans:
             self.humans_id = np.array(range(len(humans)))
             self.humans_current = np.concatenate((np.c_[np.repeat(frame, len(humans))], np.c_[self.humans_id], humans_current), axis=1)
             self.humans_tracklet = self.humans_current
-            self.clm_num = self.humans_current.shape[1] - 1
+            # self.clm_num = self.humans_current.shape[1] - 1
 
         else:
             self.humans_id = self.search_nearest(humans, self.humans_post, self.humans_id)

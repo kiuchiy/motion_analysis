@@ -155,13 +155,13 @@ def run_video(video, path='', skip_cog=False, skip_track=False, cog_color='black
         if not skip_track:
             # plot hands trajectories
             for i, hum in enumerate(np.sort(track.humans_id)):
-                df_human = track.humans_tracklet[track.humans_tracklet[:, track.clm_num] == hum]
+                df_human = track.humans_tracklet[track.humans_tracklet[:, 1] == hum]
                 df_human = df_human.astype(int)
                 trajectories = np.array([(gdf[4 * 3 + 2], gdf[4 * 3 + 3]) for gdf in df_human if gdf[4 * 3 + 2]])
-                cv2.polylines(img, [trajectories], False, (200, 200, int(i%3)*30), 3, cv2.LINE_4)
+                cv2.polylines(img, [trajectories], False, (200, 200, int(hum%3)*30), 3, cv2.LINE_4)
                 # polydotline(img, [trajectories], (200, 200, int(i%3)*30))
                 trajectories = np.array([(gdf[7 * 3 + 2], gdf[7 * 3 + 3]) for gdf in df_human if gdf[7 * 3 + 2]])
-                cv2.polylines(img, [trajectories], False, (int(i%3)*30, 200, int(i%3)*30), 3, cv2.LINE_4)
+                cv2.polylines(img, [trajectories], False, (int(hum%3)*30, 200, int(hum%3)*30), 3, cv2.LINE_4)
                 # polydotline(img, [trajectories], (200, 200, int(i%3)*30))
 
         # save figure
