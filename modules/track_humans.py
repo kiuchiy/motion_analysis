@@ -11,6 +11,7 @@ class TrackHumans:
         self.humans_tracklet = None
         self.clm_num = None
         self.humans_post = None
+        self.id_max = None
 
     def track_humans(self, frame, humans):
         """
@@ -27,6 +28,7 @@ class TrackHumans:
             self.humans_id = np.array(range(len(humans)))
             self.humans_current = np.concatenate((np.c_[np.repeat(frame, len(humans))], np.c_[self.humans_id], humans_current), axis=1)
             self.humans_tracklet = self.humans_current
+            self.id_max = len(humans)
             # self.clm_num = self.humans_current.shape[1] - 1
 
         else:
@@ -37,8 +39,8 @@ class TrackHumans:
 
         self.humans_post = humans
 
-    @staticmethod
-    def search_nearest(humans, prev_humans, prev_id):
+    # @staticmethod
+    def search_nearest(self, humans, prev_humans, prev_id):
         """
         
         :param humans: 
@@ -71,5 +73,6 @@ class TrackHumans:
                 target_num = np.where(nearest_prev_num == dup)
                 correct_idx = np.argmin(dists_from_prevs[target_num, dup])
                 new_appearance = np.concatenate((new_appearance, np.delete(target_num, correct_idx))).astype('int')
-            current_id[new_appearance] = range(max(prev_id) + 1, max(prev_id) + 1 + len(new_appearance))
+            current_id[new_appearance] = range(self.id_max + 1, self.id_max + 1 + len(new_appearance))
+        self.id_max += len(new_appearance)
         return current_id
