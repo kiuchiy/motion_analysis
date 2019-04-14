@@ -18,4 +18,4 @@ def dotline(img, pt1, pt2, color, thickness=1, gap=20):
 
 def polydotline(img, pts, color, thickness=1):
     for p in pts:
-        cv2.circle(img, p, thickness, color, -1)
+        cv2.circle(img, (p[0], p[1]), thickness, color, -1)
