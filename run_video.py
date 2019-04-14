@@ -154,8 +154,8 @@ def run_video(video, path='', skip_cog=False, skip_track=False, cog_color='black
                 df_human = track.humans_tracklet[track.humans_tracklet[:, track.clm_num] == hum]
                 df_human = df_human.astype(int)
                 trajectories = np.array([(gdf[4 * 3 + 1], gdf[4 * 3 + 2]) for gdf in df_human if gdf[4 * 3 + 1]])
-                # cv2.polylines(img, [trajectories], False, (200, 200, int(i%3)*30), 3, cv2.LINE_4)
-                polydotline(img, [trajectories], (200, 200, int(i%3)*30))
+                cv2.polylines(img, [trajectories], False, (200, 200, int(i%3)*30), 3, cv2.LINE_4)
+                # polydotline(img, [trajectories], (200, 200, int(i%3)*30))
                 trajectories = np.array([(gdf[7 * 3 + 1], gdf[7 * 3 + 2]) for gdf in df_human if gdf[7 * 3 + 1]])
                 cv2.polylines(img, [trajectories], False, (int(i%3)*30, 200, int(i%3)*30), 3, cv2.LINE_4)
                 # polydotline(img, [trajectories], (200, 200, int(i%3)*30))
