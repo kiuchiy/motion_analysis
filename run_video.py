@@ -89,7 +89,7 @@ def run_video(video, path='', skip_cog=False, skip_track=False, cog_color='black
     track = TrackHumans(start_frame=start_frame)
     # CSV FILE SETTING
     segments = ["Nose", "Neck", "RShoulder", "RElbow", "RWrist", "LShoulder", "LElbow", "LWrist",
-                "MidHip", "RHip", "RKnee", "RAnkle", "LHip", "LKnee", "LAnkle",
+                "MidHip", "RHip", "RKnee", "RAnkle", "LHip", "LKnee", "LAnkle", "Background"
                 "REye", "LEye", "REar", "LEar", "LBigToe", "LSmallToe", "LHeel", "RBigToe", "RSmallToe", "RHeel",
                 "head_cog", "torso_cog", "r_thigh_cog", "l_thigh_cog", "r_leg_cog", "l_leg_cog", "r_foot_cog", "l_foot_cog",
                 "r_arm_cog", "l_arm_cog", "r_forearm_cog", "l_forearm_cog", "r_hand_cog", "l_hand_cog"]
@@ -137,6 +137,7 @@ def run_video(video, path='', skip_cog=False, skip_track=False, cog_color='black
             logger.info('inference in %.4f seconds.' % time_estimation)
             logger.debug('shape of image: ' + str(image.shape))
             logger.debug(str(humans))
+            logger.info('shape of humans: ' + str(humans.shape))
 
         # PLOT Pictures for movie
         img = datum.cvOutputData
