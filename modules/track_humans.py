@@ -61,7 +61,8 @@ class TrackHumans:
 
         # diff in 1 frame should be less than threshold pixels
         min_dists_from_prev = np.min(dists_from_prevs, axis=1)
-        track_threshold = np.mean(min_dists_from_prev) + np.std(min_dists_from_prev)  # 500
+        track_threshold = 500
+        # track_threshold = np.mean(min_dists_from_prev) + np.std(min_dists_from_prev)  # 500
 
         new_appearance = np.where(min_dists_from_prev > track_threshold)[0]
         # check the duplication of nearest body num
