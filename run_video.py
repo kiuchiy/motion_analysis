@@ -95,6 +95,9 @@ def run_video(video, path='', skip_cog=False, skip_track=False, cog_color='black
                 "r_arm_cog", "l_arm_cog", "r_forearm_cog", "l_forearm_cog", "r_hand_cog", "l_hand_cog"]
     seg_columns = ['frame', 'human_id']
     [seg_columns.extend([x + '_x', x + '_y', x + '_score']) for x in segments]
+    df_template = pd.DataFrame(columns=seg_columns)
+    df_template.to_csv(csv_file, index=False)
+
     # processing video
     frame_no = 0
     while cap.isOpened():
@@ -175,7 +178,7 @@ def run_video(video, path='', skip_cog=False, skip_track=False, cog_color='black
     cmd = ["ffmpeg", "-r", str(caps_fps), "-start_number", str(start_frame),
            "-i", os.path.join(path_png_estimated, video.split('.')[-2] + "%06d.png"),
            "-vcodec", "libx264", "-pix_fmt", "yuv420p",
-           os.path.join(path_movie_out, video.split('.')[-2] + "_track.mp4")]
+           os.path.join(path_movie_out, video.split('.')[-2] + ".mp4")]
     subprocess.call(cmd)
     logger.debug('finished+')
 
