@@ -37,7 +37,7 @@ except ImportError as e:
     raise e
 
 
-def moving_average(a, n=3) :
+def moving_average(a, n=3):
     ret = np.cumsum(a, dtype=float, axis=0)
     ret[n:] = ret[n:] - ret[:-n]
     return ret[n - 1:] / n
@@ -118,11 +118,14 @@ def run_video(video, path='', skip_cog=False, skip_track=False, cog_color='black
 
         # calculate and save data
         t = time.time()
+        # calculate track
+        humans_shape = humans.shape
+        humans[humans == 0] = np.NaN
+        humans = humans.reshape(humans_shape)
+        track.track_humans(frame_no, humans)
         # calculate cog
         bodies_cog = ma.multi_bodies_cog(humans=humans)
         bodies_cog[np.isnan(bodies_cog[:, :, :])] = 0  # to plot, fill nan
-        # calculate track
-        track.track_humans(frame_no, humans)
         humans_feature = np.concatenate((track.humans_current,
                                          bodies_cog.reshape(bodies_cog.shape[0],
                                                             bodies_cog.shape[1] * bodies_cog.shape[2])), axis=1)
