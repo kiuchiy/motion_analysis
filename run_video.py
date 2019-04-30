@@ -136,6 +136,7 @@ def run_video(video, path='', skip_cog=False, skip_track=False, plt_graph=False 
             logger.debug(str(humans))
             logger.info('shape of humans: ' + str(humans.shape))
         if frame_no % int(caps_fps) == 0:
+            # for resetting number of graph.
             hum_count = len(ma.humans_id)
 
         # PLOT Pictures for movie
@@ -193,6 +194,8 @@ def run_video(video, path='', skip_cog=False, skip_track=False, plt_graph=False 
             ax_img.imshow(img)
             # hum_c = ma.humans_current
             for i, hum in enumerate(np.sort(ma.humans_id)):
+                if i == (graph_row * (graph_col - graph_row)):
+                    break  # count of humans is over the capacity
                 hum_track = ma.humans_tracklet[ma.humans_tracklet[:, 1] == hum]
                 hum_track = hum_track.astype(int)
                 ax_graph = plt.subplot2grid(grid_size, (i - graph_row * int(i / graph_row), graph_row + int(i / graph_row)))
