@@ -106,7 +106,7 @@ class MotionAnalysis():
         if len(humans.shape) == 0:
             self.humans_id = np.array([])
             self.bodies_cog = np.empty(shape=(0, 25, 3))
-            self.humans_current = np.array([])
+            self.humans_current = np.empty(shape=(0, 122))
 
             return
         humans[humans == 0] = np.NaN
@@ -143,6 +143,11 @@ class MotionAnalysis():
         :param prev_id:
         :return:
         """
+        if len(prev_id) == 0:
+            current_id = np.array(range(self.id_max + 1, self.id_max + 1 + len(humans)))
+            self.id_max = max(current_id)
+            return current_id
+
         # calculate humans points distances
         # 1.distance of body parts position (like Nose = humans[:,0,:2])
         distances = np.array([distance.cdist(humans[:, i, :2], prev_humans[:, i, :2]) for i in range(humans.shape[1])])
@@ -154,7 +159,6 @@ class MotionAnalysis():
         nearest_prev_num = np.nanargmin(dists_from_prevs, axis=1)
         # sort previous ids
         current_id = prev_id[nearest_prev_num]
-
         # diff in 1 frame should be less than threshold pixels
         min_dists_from_prev = np.min(dists_from_prevs, axis=1)
         track_threshold = 500
