@@ -19,8 +19,8 @@ class MotionAnalysis():
     def __init__(self, height=1.70, weight=60, fps=30, start_frame=0):
         self.start = start_frame
         self.humans_id = np.array([])
-        self.humans_current = None
-        self.humans_tracklet = None
+        self.humans_current = np.array([])
+        self.humans_tracklet = np.array([])
         self.clm_num = None
         self.humans_post = None
         self.id_max = None
