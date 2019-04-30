@@ -18,7 +18,7 @@ class MotionAnalysis():
 
     def __init__(self, height=1.70, weight=60, fps=30, start_frame=0):
         self.start = start_frame
-        self.humans_id = None
+        self.humans_id = np.array([])
         self.humans_current = None
         self.humans_tracklet = None
         self.clm_num = None
@@ -103,11 +103,14 @@ class MotionAnalysis():
         :return:
         """
         # initialize
+        if len(humans) == 0:
+            self.humans_id = np.array([])
+            return
         humans[humans == 0] = np.NaN
         humans_current = humans.reshape(humans.shape[0], humans.shape[1] * humans.shape[2])
         bodies_cog = self.multi_bodies_cog(humans)
 
-        if frame == self.start:
+        if not self.humans_tracklet:
             self.humans_id = np.array(range(len(humans)))
             self.id_max = len(humans)
             self.humans_current = np.concatenate(
