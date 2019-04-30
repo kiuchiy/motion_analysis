@@ -220,11 +220,13 @@ if __name__ == '__main__':
     parser.add_argument('--video', type=str, default='')
     parser.add_argument('--start_frame', type=int, default=0)
     parser.add_argument('--skip_track', type=bool, default=False)
-    parser.add_argument('--skip_graph', type=bool, default=False)
+    # parser.add_argument('--skip_graph', type=bool, default=False)
+    parser.add_argument('--plt_graph', type=bool, default=False)
     parser.add_argument('--skip_cog', type=bool, default=False)
     parser.add_argument('--cog_color', type=str, default='black')
     parser.add_argument('--debug', type=bool, default=False)
     args = parser.parse_args()
     run_video(video=args.video, path=args.path, skip_cog=args.skip_cog, skip_track=args.skip_track,
+              plt_graph=args.plt_graph,
               cog_color=args.cog_color, start_frame=args.start_frame, debug=args.debug)
 
