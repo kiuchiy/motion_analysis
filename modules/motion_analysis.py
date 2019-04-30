@@ -111,7 +111,10 @@ class MotionAnalysis():
             self.humans_id = np.array(range(len(humans)))
             self.id_max = len(humans)
             self.humans_current = np.concatenate(
-                (np.c_[np.repeat(frame, len(humans))], np.c_[self.humans_id], humans_current), axis=1)
+                (np.c_[np.repeat(frame, len(humans))], np.c_[self.humans_id],
+                 humans_current,
+                 bodies_cog.reshape(bodies_cog.shape[0], bodies_cog.shape[1] * bodies_cog.shape[2])
+                 ), axis=1)
             self.humans_tracklet = self.humans_current
 
         else:
