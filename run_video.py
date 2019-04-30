@@ -186,7 +186,7 @@ def run_video(video, path='', skip_cog=False, skip_track=False, plt_graph=False 
             fig = plt.figure(figsize=(14, 8))
             grid_size = (fignum, fignum + 1 + int((hum_num_init+1)/8))
             ax_img = plt.subplot2grid(grid_size, (0, 0), rowspan=fignum, colspan=fignum)
-            # img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+            img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
             ax_img.imshow(img)
             # hum_c = ma.humans_current
             for i, hum in enumerate(np.sort(ma.humans_id)):
