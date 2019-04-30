@@ -194,7 +194,7 @@ def run_video(video, path='', skip_cog=False, skip_track=False, plt_graph=False 
             ax_img.imshow(img)
             if len(ma.humans_id):
                 hum_idx = ~np.isnan(ma.humans_current[:, 19 * 3 + 2])
-                ax_img.set_xticks(ma.humans_current[hum_idx, 19 * 3 + 2], tuple(ma.humans_id[hum_idx]))
+                ax_img.set_xticks(ma.humans_current[hum_idx, 19 * 3 + 2], (ma.humans_id[hum_idx]).astype(str))
             # hum_c = ma.humans_current
             for i, hum in enumerate(np.sort(ma.humans_id)):
                 if i == (graph_row * (graph_col - graph_row)):
