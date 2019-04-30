@@ -185,7 +185,7 @@ def run_video(video, path='', skip_cog=False, skip_track=False, plt_graph=False 
             cv2.imwrite(os.path.join(path_png_estimated,
                                      video.split('.')[-2] + '{:06d}'.format(frame_no) + ".png"), img)
         else:
-            graph_row = 8 if hum_count > 4 else 4
+            graph_row = 6  # if hum_count > 6 else 4
             graph_col = graph_row + 2 + int((hum_count-graph_row if hum_count-graph_row > 0 else 0)/graph_row)
             fig = plt.figure(figsize=(16, 8))
             grid_size = (graph_row, graph_col)
@@ -194,7 +194,8 @@ def run_video(video, path='', skip_cog=False, skip_track=False, plt_graph=False 
             ax_img.imshow(img)
             if len(ma.humans_id):
                 hum_idx = ~np.isnan(ma.humans_current[:, 19 * 3 + 2])
-                ax_img.set_xticks(ma.humans_current[hum_idx, 19 * 3 + 2], list((ma.humans_id[hum_idx]).astype(str)))
+                ax_img.set_xticks(ma.humans_current[hum_idx, 19 * 3 + 2])
+                ax_img.set_xticklabels(list((ma.humans_id[hum_idx]).astype(str)))
             # hum_c = ma.humans_current
             for i, hum in enumerate(np.sort(ma.humans_id)):
                 if i == (graph_row * (graph_col - graph_row)):
