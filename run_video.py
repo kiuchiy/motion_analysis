@@ -165,7 +165,7 @@ def run_video(video, path='', skip_cog=False, skip_track=False, plt_graph=False 
                     dotline(img, (bodies_cog[i, 7, 0], 0), (bodies_cog[i, 7, 0], h_pxl), color=(10, 10, 10), thickness=2)
                 # trajectories of COG
                 trajectories = np.array([(pos[39 * 3 + 2], pos[39 * 3 + 3]) for pos in hum_track if pos[4 * 3 + 2] > 1])
-                cv2.polylines(img, [trajectories], False, (200, 200, int(hum % 3) * 30), 3, cv2.LINE_4)
+                cv2.polylines(img, [trajectories], False, (0, 0, 0), 3, cv2.LINE_4)
 
             # plot hands trajectories
             if not skip_track:
@@ -192,6 +192,8 @@ def run_video(video, path='', skip_cog=False, skip_track=False, plt_graph=False 
                 hum_track = ma.humans_tracklet[ma.humans_tracklet[:, 1] == hum]
                 hum_track = hum_track.astype(int)
                 ax_graph = plt.subplot2grid(grid_size, (i - fignum * int(i / fignum), fignum + int(i / fignum)))
+                if frame_no % int(caps_fps) == 0:
+                    print(hum_track.shape)
                 foot = (hum_track[39 * 3 + 2] - hum_track[6 * 3 + 2]) / (hum_track[7 * 3 + 2] - hum_track[6 * 3 + 2])
                 line1 = ax_graph.plot(hum_track[0], foot)
             plt.savefig(os.path.join(path_png_estimated,
