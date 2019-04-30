@@ -186,7 +186,7 @@ def run_video(video, path='', skip_cog=False, skip_track=False, plt_graph=False 
         else:
             fignum = 6  # if hum_num_init > 4 else 4
             fig = plt.figure(figsize=(18, 8))
-            grid_size = (fignum, fignum + 2 + int((hum_num_init+2)/fignum))
+            grid_size = (fignum, fignum + 2 + int((hum_num_init)/fignum))
             ax_img = plt.subplot2grid(grid_size, (0, 0), rowspan=fignum, colspan=fignum)
             img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
             ax_img.imshow(img)
