@@ -21,7 +21,7 @@ class MotionAnalysis():
         self.humans_id = np.array([])
         self.humans_current = np.array([])
         self.humans_tracklet = np.array([])
-        self.bodies_cog = np.arrray([])
+        self.bodies_cog = np.array([])
         self.clm_num = None
         self.humans_post = None
         self.id_max = None
