@@ -182,7 +182,7 @@ def run_video(video, path='', skip_cog=False, skip_track=False, plt_graph=False 
             cv2.imwrite(os.path.join(path_png_estimated,
                                      video.split('.')[-2] + '{:06d}'.format(frame_no) + ".png"), img)
         else:
-            fignum = 8 if len(hum_num_init) > 6 else 6
+            fignum = 8 if hum_num_init > 6 else 6
             fig = plt.figure(figsize=(20, 16))
             grid_size = (fignum, fignum + 1 + int((hum_num_init+2)/8))
             ax_img = plt.subplot2grid(grid_size, (0, 0), rowspan=8, colspan=8)
