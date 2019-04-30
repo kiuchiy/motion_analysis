@@ -141,7 +141,7 @@ def run_video(video, path='', skip_cog=False, skip_track=False, plt_graph=False 
         img = datum.cvOutputData
 
         # plot cog & foot lines
-        if len(humans.shape) == 0:
+        if len(humans.shape) != 0:
             cog_size = (calc_torso_length(humans) / 8).astype(int)
         # if not skip_cog:
         #     for i in range(len(bodies_cog)):
