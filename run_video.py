@@ -135,8 +135,8 @@ def run_video(video, path='', skip_cog=False, skip_track=False, plt_graph=False 
             logger.debug('shape of image: ' + str(image.shape))
             logger.debug(str(humans))
             logger.info('shape of humans: ' + str(humans.shape))
-        if frame_no == 0:
-            hum_num_init = len(ma.humans_id)
+        if frame_no % int(caps_fps) == 0:
+            hum_count = len(ma.humans_id)
 
         # PLOT Pictures for movie
         img = datum.cvOutputData
@@ -184,17 +184,18 @@ def run_video(video, path='', skip_cog=False, skip_track=False, plt_graph=False 
             cv2.imwrite(os.path.join(path_png_estimated,
                                      video.split('.')[-2] + '{:06d}'.format(frame_no) + ".png"), img)
         else:
-            fignum = 6  # if hum_num_init > 4 else 4
-            fig = plt.figure(figsize=(18, 8))
-            grid_size = (fignum, fignum + 2 + int(hum_num_init/fignum))
-            ax_img = plt.subplot2grid(grid_size, (0, 0), rowspan=fignum, colspan=fignum)
+            graph_row = 8 if hum_count > 4 else 4
+            graph_col = graph_row + 2 + int((hum_count-graph_row if hum_count-graph_row > 0 else 0)/graph_row)
+            fig = plt.figure(figsize=(16, 8))
+            grid_size = (graph_row, graph_col)
+            ax_img = plt.subplot2grid(grid_size, (0, 0), rowspan=graph_row, colspan=graph_row)
             img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
             ax_img.imshow(img)
             # hum_c = ma.humans_current
             for i, hum in enumerate(np.sort(ma.humans_id)):
                 hum_track = ma.humans_tracklet[ma.humans_tracklet[:, 1] == hum]
                 hum_track = hum_track.astype(int)
-                ax_graph = plt.subplot2grid(grid_size, (i - fignum * int(i / fignum), fignum + int(i / fignum)))
+                ax_graph = plt.subplot2grid(grid_size, (i - graph_row * int(i / graph_row), graph_row + int(i / graph_row)))
                 hum_track = hum_track[~np.isnan(hum_track[:, 19 * 3 + 2])]
                 hum_track = hum_track[~np.isnan(hum_track[:, 22 * 3 + 2])]
                 if hum_track.shape[0] > 0:
