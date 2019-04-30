@@ -194,12 +194,12 @@ def run_video(video, path='', skip_cog=False, skip_track=False, plt_graph=False 
                 hum_track = ma.humans_tracklet[ma.humans_tracklet[:, 1] == hum]
                 hum_track = hum_track.astype(int)
                 ax_graph = plt.subplot2grid(grid_size, (i - fignum * int(i / fignum), fignum + int(i / fignum)))
-                hum_track = hum_track[~np.isnan(hum_track[:, 21 * 3 + 2])]
-                hum_track = hum_track[~np.isnan(hum_track[:, 24 * 3 + 2])]
+                hum_track = hum_track[~np.isnan(hum_track[:, 19 * 3 + 2])]
+                hum_track = hum_track[~np.isnan(hum_track[:, 22 * 3 + 2])]
                 if hum_track.shape[0] > 0:
-                    foot = (hum_track[:, 39 * 3 + 2] - hum_track[:, 21 * 3 + 2]) / (hum_track[:, 24 * 3 + 2] - hum_track[:, 21 * 3 + 2])
+                    foot = (hum_track[:, 39 * 3 + 2] - hum_track[:, 19 * 3 + 2]) / (hum_track[:, 22 * 3 + 2] - hum_track[:, 19 * 3 + 2])
                     line1 = ax_graph.plot(hum_track[:, 0], foot)
-                    ax_graph.set_ylim([-0.1, 1.1])
+                    ax_graph.set_ylim([-0.2, 1.2])
                     ax_graph.set_xlim([hum_track[0, 0], hum_track[0, 0]+30])
             plt.savefig(os.path.join(path_png_estimated,
                                      video.split('.')[-2] + '{:06d}'.format(frame_no) + ".png"))
