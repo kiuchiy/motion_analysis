@@ -192,6 +192,9 @@ def run_video(video, path='', skip_cog=False, skip_track=False, plt_graph=False 
             ax_img = plt.subplot2grid(grid_size, (0, 0), rowspan=graph_row, colspan=graph_row)
             img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
             ax_img.imshow(img)
+            if len(ma.humans_id):
+                hum_idx = ~np.isnan(ma.humans_current[:, 19 * 3 + 2])
+                ax_img.set_xticks(ma.humans_current[hum_idx, 19 * 3 + 2], tuple(ma.humans_id[hum_idx]))
             # hum_c = ma.humans_current
             for i, hum in enumerate(np.sort(ma.humans_id)):
                 if i == (graph_row * (graph_col - graph_row)):
@@ -206,6 +209,7 @@ def run_video(video, path='', skip_cog=False, skip_track=False, plt_graph=False 
                     line1 = ax_graph.plot(hum_track[:, 0], foot)
                     ax_graph.set_ylim([-0.2, 1.2])
                     ax_graph.set_xlim([hum_track[0, 0], hum_track[0, 0]+30])
+                    ax_graph.legend([str(hum)])
             plt.savefig(os.path.join(path_png_estimated,
                                      video.split('.')[-2] + '{:06d}'.format(frame_no) + ".png"))
             plt.close()
