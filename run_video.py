@@ -199,6 +199,7 @@ def run_video(video, path='', skip_cog=False, skip_track=False, plt_graph=False 
                     foot = (hum_track[:, 39 * 3 + 2] - hum_track[:, 21 * 3 + 2]) / (hum_track[:, 24 * 3 + 2] - hum_track[:, 21 * 3 + 2])
                     line1 = ax_graph.plot(hum_track[:, 0], foot)
                     ax_graph.set_ylim([-0.1, 1.1])
+                    ax_graph.set_xlim([hum_track[0, 0], hum_track[0, 0]+30])
             plt.savefig(os.path.join(path_png_estimated,
                                      video.split('.')[-2] + '{:06d}'.format(frame_no) + ".png"))
             plt.close()
