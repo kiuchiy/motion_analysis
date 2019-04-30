@@ -103,14 +103,9 @@ class MotionAnalysis():
         :return:
         """
         # initialize
-        try:
-            if len(humans) == 0:
-                self.humans_id = np.array([])
-                return
-        except:
-            print('humans: ', humans)
-            print('shape of humans: ', humans.shape)
-            print('type of humans: ', type(humans))
+        if len(humans.shape) == 0:
+            self.humans_id = np.array([])
+            return
         humans[humans == 0] = np.NaN
         humans_current = humans.reshape(humans.shape[0], humans.shape[1] * humans.shape[2])
         bodies_cog = self.multi_bodies_cog(humans)
