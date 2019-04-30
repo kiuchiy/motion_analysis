@@ -1,4 +1,6 @@
 import numpy as np
+from scipy.spatial import distance
+from collections import Counter
 
 from modules.humans_to_array import calc_cog, segment_cog
 
@@ -14,7 +16,15 @@ class MotionAnalysis():
     # japanese male average length of body segments
     # units are meter-kg
 
-    def __init__(self, height=1.70, weight=60, fps=30, humans_for_gravity=[]):
+    def __init__(self, height=1.70, weight=60, fps=30, start_frame, humans_for_gravity=[]):
+        self.start = start_frame
+        self.humans_id = None
+        self.humans_current = None
+        self.humans_tracklet = None
+        self.clm_num = None
+        self.humans_post = None
+        self.id_max = None
+
         self.fps = fps
         self.height = height
         self.weight = weight
@@ -83,18 +93,75 @@ class MotionAnalysis():
     #     head_inertia[3, 3] = (-138.956 + 1307.37*self.head_length + 1.24856*self.weight)/10000
     #     [humans_for_gravity
 
-    def single_body_cog(self, human):
-        segments_cog = segment_cog(human)
-        cog = calc_cog(segments_cog,
-                       [self.head_weight, self.torso_weight,
-                        self.thigh_weight, self.thigh_weight, self.leg_weight,
-                        self.leg_weight,
-                        self.foot_weight, self.foot_weight, self.arm_weight,
-                        self.arm_weight,
-                        self.forearm_weight, self.forearm_weight, self.hand_weight,
-                        self.hand_weight,
-                        ])
-        return segments_cog.append(cog)
+    def track_humans(self, frame, humans):
+        """
+        Make tracklets (tracked ids cluster).
+        1. set current id by referring nearest id of previous frame
+        2. add id to humans data
+        3. stack humans data to make tracklet
+        :param :
+        :return:
+        """
+        # initialize
+        humans[humans == 0] = np.NaN
+        humans_current = humans.reshape(humans.shape[0], humans.shape[1] * humans.shape[2])
+        bodies_cog = self.multi_bodies_cog(humans)
+
+        if frame == self.start:
+            self.humans_id = np.array(range(len(humans)))
+            self.id_max = len(humans)
+            self.humans_current = np.concatenate(
+                (np.c_[np.repeat(frame, len(humans))], np.c_[self.humans_id], humans_current), axis=1)
+            self.humans_tracklet = self.humans_current
+
+        else:
+            self.humans_id = self.search_nearest(humans, self.humans_post, self.humans_id)
+            self.humans_current = np.concatenate(
+                (np.c_[np.repeat(frame, len(humans))], np.c_[self.humans_id],
+                 humans_current,
+                 bodies_cog.reshape(bodies_cog.shape[0],bodies_cog.shape[1] * bodies_cog.shape[2])
+                 ), axis=1)
+            self.humans_tracklet = (np.concatenate((self.humans_tracklet[self.humans_tracklet[:, 0] > (frame - 30)],
+                                                    self.humans_current)))  # .astype(int)
+
+        self.humans_post = humans
+
+    def search_nearest(self, humans, prev_humans, prev_id):
+        """
+
+        :param humans:
+        :param prev_humans:
+        :param prev_id:
+        :return:
+        """
+        # calculate humans points distances
+        # 1.distance of body parts position (like Nose = humans[:,0,:2])
+        distances = np.array([distance.cdist(humans[:, i, :2], prev_humans[:, i, :2]) for i in range(humans.shape[1])])
+
+        # 2. search nearest body
+        # distance mean of each body parts as representative distance value
+        dists_from_prevs = np.nanmean(distances, axis=0)
+        # nearest_prev_num means previous frame's body's index ordered by distance from current ones
+        nearest_prev_num = np.nanargmin(dists_from_prevs, axis=1)
+        # sort previous ids
+        current_id = prev_id[nearest_prev_num]
+
+        # diff in 1 frame should be less than threshold pixels
+        min_dists_from_prev = np.min(dists_from_prevs, axis=1)
+        track_threshold = 500
+        # track_threshold = np.mean(min_dists_from_prev) + np.std(min_dists_from_prev)  # 500
+
+        new_appearance = np.where(min_dists_from_prev > track_threshold)[0]
+        # check the duplication of nearest body num
+        duplicate_num = [item for item, count in Counter(nearest_prev_num).items() if count > 1]
+        if len(duplicate_num):
+            for dup in duplicate_num:
+                target_num = np.where(nearest_prev_num == dup)
+                correct_idx = np.argmin(dists_from_prevs[target_num, dup])
+                new_appearance = np.concatenate((new_appearance, np.delete(target_num, correct_idx))).astype('int')
+            current_id[new_appearance] = range(self.id_max + 1, self.id_max + 1 + len(new_appearance))
+        self.id_max += len(new_appearance)
+        return current_id
 
     def multi_bodies_cog(self, humans):
         cogs = []
@@ -133,22 +200,9 @@ class MotionAnalysis():
 
 
 # class CocoPart(Enum):
-#     Nose = 0
-#     Neck = 1
-#     RShoulder = 2
-#     RElbow = 3
-#     RWrist = 4
-#     LShoulder = 5
-#     LElbow = 6
-#     LWrist = 7
-#     RHip = 8
-#     RKnee = 9
-#     RAnkle = 10
-#     LHip = 11
-#     LKnee = 12
-#     LAnkle = 13
-#     REye = 14
-#     LEye = 15
-#     REar = 16
-#     LEar = 17
-#     Background = 18
+# ["Nose", "Neck", "RShoulder", "RElbow", "RWrist", "LShoulder", "LElbow", "LWrist",
+#  "MidHip", "RHip", "RKnee", "RAnkle", "LHip", "LKnee", "LAnkle",
+#  "REye", "LEye", "REar", "LEar", "LBigToe", "LSmallToe", "LHeel", "RBigToe", "RSmallToe", "RHeel",
+#  "head_cog", "torso_cog", "r_thigh_cog", "l_thigh_cog", "r_leg_cog", "l_leg_cog", "r_foot_cog", "l_foot_cog",
+#  "r_arm_cog", "l_arm_cog", "r_forearm_cog", "l_forearm_cog", "r_hand_cog", "l_hand_cog", "body_cog"]
+#

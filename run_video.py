@@ -15,6 +15,8 @@ from modules.track_humans import TrackHumans
 from modules.humans_to_array import calc_torso_length
 from importlib import reload as reload
 from modules.draw_cv import dotline, polydotline
+import matplotlib.pyplot as plt
+
 
 # Import Openpose (Windows/Ubuntu/OSX)
 dir_path = "./" #os.path.dirname(os.path.realpath(__file__))
@@ -43,7 +45,7 @@ def moving_average(a, n=3):
     return ret[n - 1:] / n
 
 
-def run_video(video, path='', skip_cog=False, skip_track=False, cog_color='black', start_frame=0, debug=False):
+def run_video(video, path='', skip_cog=False, skip_track=False, plt_graph=False ,cog_color='black', start_frame=0, debug=False):
     try:
         logging.shutdown()
         reload(logging)
@@ -86,7 +88,6 @@ def run_video(video, path='', skip_cog=False, skip_track=False, cog_color='black
         logger.info("ERROR: opening video stream or file")
     caps_fps = cap.get(cv2.CAP_PROP_FPS)
     ma = MotionAnalysis()
-    track = TrackHumans(start_frame=start_frame)
     # CSV FILE SETTING
     segments = ["Nose", "Neck", "RShoulder", "RElbow", "RWrist", "LShoulder", "LElbow", "LWrist",
                 "MidHip", "RHip", "RKnee", "RAnkle", "LHip", "LKnee", "LAnkle", "background",
@@ -118,18 +119,11 @@ def run_video(video, path='', skip_cog=False, skip_track=False, cog_color='black
 
         # calculate and save data
         t = time.time()
-        # calculate track
-        humans_shape = humans.shape
-        humans[humans == 0] = np.NaN
-        humans = humans.reshape(humans_shape)
-        track.track_humans(frame_no, humans)
+        ma.track_humans(frame_no, humans)
         # calculate cog
         bodies_cog = ma.multi_bodies_cog(humans=humans)
         bodies_cog[np.isnan(bodies_cog[:, :, :])] = 0  # to plot, fill nan
-        humans_feature = np.concatenate((track.humans_current,
-                                         bodies_cog.reshape(bodies_cog.shape[0],
-                                                            bodies_cog.shape[1] * bodies_cog.shape[2])), axis=1)
-        df_frame = pd.DataFrame(humans_feature.round(1))
+        df_frame = pd.DataFrame(ma.humans_current.round(1))
         df_frame.to_csv(csv_file, index=False, header=None, mode='a')
         time_cog = time.time() - t
 
@@ -141,36 +135,69 @@ def run_video(video, path='', skip_cog=False, skip_track=False, cog_color='black
             logger.debug('shape of image: ' + str(image.shape))
             logger.debug(str(humans))
             logger.info('shape of humans: ' + str(humans.shape))
+            hum_num_init = len(ma.humans_id)
 
         # PLOT Pictures for movie
         img = datum.cvOutputData
 
         # plot cog & foot lines
         cog_size = (calc_torso_length(humans) / 8).astype(int)
-        if not skip_cog:
-            for i in range(len(bodies_cog)):
+        # if not skip_cog:
+        #     for i in range(len(bodies_cog)):
+        #         # plot center of gravity
+        #         cv2.circle(img, (bodies_cog[i, 14, 0], bodies_cog[i, 14, 1]), cog_size[i, i], color=(0, 0, 0), thickness=-1)
+        #         # plot foot line
+        #         if bodies_cog[i, 6, 0]:
+        #             dotline(img, (bodies_cog[i, 6, 0], 0), (bodies_cog[i, 6, 0], h_pxl), color=(10, 10, 10), thickness=2)
+        #         if bodies_cog[i, 7, 0]:
+        #             dotline(img, (bodies_cog[i, 7, 0], 0), (bodies_cog[i, 7, 0], h_pxl), color=(10, 10, 10), thickness=2)
+
+        for i, hum in enumerate(np.sort(ma.humans_id)):
+            hum_track = ma.humans_tracklet[ma.humans_tracklet[:, 1] == hum]
+            hum_track = hum_track.astype(int)
+            # plot cog & foot lines
+            if not skip_cog:
                 cv2.circle(img, (bodies_cog[i, 14, 0], bodies_cog[i, 14, 1]), cog_size[i, i], color=(0, 0, 0), thickness=-1)
+                # plot foot line
                 if bodies_cog[i, 6, 0]:
                     dotline(img, (bodies_cog[i, 6, 0], 0), (bodies_cog[i, 6, 0], h_pxl), color=(10, 10, 10), thickness=2)
                 if bodies_cog[i, 7, 0]:
                     dotline(img, (bodies_cog[i, 7, 0], 0), (bodies_cog[i, 7, 0], h_pxl), color=(10, 10, 10), thickness=2)
+                # trajectories of COG
+                trajectories = np.array([(pos[39 * 3 + 2], pos[39 * 3 + 3]) for pos in hum_track if pos[4 * 3 + 2] > 1])
+                cv2.polylines(img, [trajectories], False, (200, 200, int(hum % 3) * 30), 3, cv2.LINE_4)
 
-        if not skip_track:
             # plot hands trajectories
-            for i, hum in enumerate(np.sort(track.humans_id)):
-                df_human = track.humans_tracklet[track.humans_tracklet[:, 1] == hum]
-                df_human = df_human.astype(int)
-                trajectories = np.array([(gdf[4 * 3 + 2], gdf[4 * 3 + 3]) for gdf in df_human if gdf[4 * 3 + 2] > 1])
+            if not skip_track:
+                trajectories = np.array([(pos[4 * 3 + 2], pos[4 * 3 + 3]) for pos in hum_track if pos[4 * 3 + 2] > 1])
                 cv2.polylines(img, [trajectories], False, (200, 200, int(hum%3)*30), 3, cv2.LINE_4)
                 # polydotline(img, [trajectories], (200, 200, int(i%3)*30))
-                trajectories = np.array([(gdf[7 * 3 + 2], gdf[7 * 3 + 3]) for gdf in df_human if gdf[7 * 3 + 2] > 1])
+                trajectories = np.array([(pos[7 * 3 + 2], pos[7 * 3 + 3]) for pos in hum_track if pos[7 * 3 + 2] > 1])
                 cv2.polylines(img, [trajectories], False, (int(hum%3)*30, 200, int(hum%3)*30), 3, cv2.LINE_4)
                 # polydotline(img, [trajectories], (200, 200, int(i%3)*30))
 
-        # save figure
-        cv2.imwrite(os.path.join(path_png_estimated,
-                                 video.split('.')[-2] + '{:06d}'.format(frame_no) + ".png"), img)
-
+        # plt graph of cog rate
+        if not plt_graph:
+            # save figure
+            cv2.imwrite(os.path.join(path_png_estimated,
+                                     video.split('.')[-2] + '{:06d}'.format(frame_no) + ".png"), img)
+        else:
+            fignum = 8 if len(hum_num_init) > 6 else 6
+            fig = plt.figure(figsize=(20, 16))
+            grid_size = (fignum, fignum + 1 + int((hum_num_init+2)/8))
+            ax_img = plt.subplot2grid(grid_size, (0, 0), rowspan=8, colspan=8)
+            ax_img.imshow(img)
+            # hum_c = ma.humans_current
+            for i, hum in enumerate(np.sort(ma.humans_id)):
+                hum_track = ma.humans_tracklet[ma.humans_tracklet[:, 1] == hum]
+                hum_track = hum_track.astype(int)
+                ax_graph = plt.subplot2grid(grid_size, (i - fignum * int(i / fignum), fignum + int(i / fignum)))
+                foot = (hum_track[39 * 3 + 2] - hum_track[6 * 3 + 2]) / (hum_track[7 * 3 + 2] - hum_track[6 * 3 + 2])
+                line1 = ax_graph.plot(hum_track[0], foot)
+            plt.savefig(os.path.join(path_png_estimated,
+                                     video.split('.')[-2] + '{:06d}'.format(frame_no) + ".png"))
+            plt.close()
+            plt.clf()
         # before increment, renew some args
         frame_no += 1
         gc.collect()
@@ -193,6 +220,7 @@ if __name__ == '__main__':
     parser.add_argument('--video', type=str, default='')
     parser.add_argument('--start_frame', type=int, default=0)
     parser.add_argument('--skip_track', type=bool, default=False)
+    parser.add_argument('--skip_graph', type=bool, default=False)
     parser.add_argument('--skip_cog', type=bool, default=False)
     parser.add_argument('--cog_color', type=str, default='black')
     parser.add_argument('--debug', type=bool, default=False)
