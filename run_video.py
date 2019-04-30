@@ -182,7 +182,7 @@ def run_video(video, path='', skip_cog=False, skip_track=False, plt_graph=False 
             cv2.imwrite(os.path.join(path_png_estimated,
                                      video.split('.')[-2] + '{:06d}'.format(frame_no) + ".png"), img)
         else:
-            fignum = 8 if hum_num_init > 6 else 6
+            fignum = 8 if hum_num_init > 4 else 4
             fig = plt.figure(figsize=(14, 8))
             grid_size = (fignum, fignum + 1 + int((hum_num_init+1)/8))
             ax_img = plt.subplot2grid(grid_size, (0, 0), rowspan=fignum, colspan=fignum)
@@ -193,10 +193,12 @@ def run_video(video, path='', skip_cog=False, skip_track=False, plt_graph=False 
                 hum_track = ma.humans_tracklet[ma.humans_tracklet[:, 1] == hum]
                 hum_track = hum_track.astype(int)
                 ax_graph = plt.subplot2grid(grid_size, (i - fignum * int(i / fignum), fignum + int(i / fignum)))
-                foot = (hum_track[:, 39 * 3 + 2] - hum_track[:, 21 * 3 + 2]) / (hum_track[:, 24 * 3 + 2] - hum_track[:, 21 * 3 + 2])
-                foot[np.isnan(hum_track[:, 21 * 3 + 2])] = np.NaN
-                line1 = ax_graph.plot(hum_track[:, 0], foot)
-                ax_graph.set_ylim([-0.1, 1.1])
+                hum_track = hum_track[~np.isnan(hum_track[:, 21 * 3 + 2])]
+                hum_track = hum_track[~np.isnan(hum_track[:, 24 * 3 + 2])]
+                if hum_track.shape[0] > 0:
+                    foot = (hum_track[:, 39 * 3 + 2] - hum_track[:, 21 * 3 + 2]) / (hum_track[:, 24 * 3 + 2] - hum_track[:, 21 * 3 + 2])
+                    line1 = ax_graph.plot(hum_track[:, 0], foot)
+                    ax_graph.set_ylim([-0.1, 1.1])
             plt.savefig(os.path.join(path_png_estimated,
                                      video.split('.')[-2] + '{:06d}'.format(frame_no) + ".png"))
             plt.close()
