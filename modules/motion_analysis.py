@@ -16,7 +16,7 @@ class MotionAnalysis():
     # japanese male average length of body segments
     # units are meter-kg
 
-    def __init__(self, height=1.70, weight=60, fps=30, start_frame, humans_for_gravity=[]):
+    def __init__(self, height=1.70, weight=60, fps=30, start_frame=0):
         self.start = start_frame
         self.humans_id = None
         self.humans_current = None
