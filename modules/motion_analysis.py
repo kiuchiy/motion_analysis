@@ -105,8 +105,8 @@ class MotionAnalysis():
         # initialize
         if len(humans.shape) == 0:
             self.humans_id = np.array([])
-            self.bodies_cog = np.arrray([])
-            self.humans_current = np.arrray([])
+            self.bodies_cog = np.array([])
+            self.humans_current = np.array([])
 
             return
         humans[humans == 0] = np.NaN
