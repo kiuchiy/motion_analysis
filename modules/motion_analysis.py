@@ -21,10 +21,10 @@ class MotionAnalysis():
         self.humans_id = np.array([])
         self.humans_current = np.array([])
         self.humans_tracklet = np.array([])
+        self.bodies_cog = np.arrray([])
         self.clm_num = None
         self.humans_post = None
         self.id_max = None
-
         self.fps = fps
         self.height = height
         self.weight = weight
@@ -105,10 +105,13 @@ class MotionAnalysis():
         # initialize
         if len(humans.shape) == 0:
             self.humans_id = np.array([])
+            self.bodies_cog = np.arrray([])
+            self.humans_current = np.arrray([])
+
             return
         humans[humans == 0] = np.NaN
         humans_current = humans.reshape(humans.shape[0], humans.shape[1] * humans.shape[2])
-        bodies_cog = self.multi_bodies_cog(humans)
+        self.bodies_cog = self.multi_bodies_cog(humans)
 
         if len(self.humans_tracklet) == 0:
             self.humans_id = np.array(range(len(humans)))

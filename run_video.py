@@ -121,7 +121,7 @@ def run_video(video, path='', skip_cog=False, skip_track=False, plt_graph=False 
         t = time.time()
         ma.track_humans(frame_no, humans)
         # calculate cog
-        bodies_cog = ma.multi_bodies_cog(humans=humans)
+        bodies_cog = ma.bodies_cog(humans=humans)
         bodies_cog[np.isnan(bodies_cog[:, :, :])] = 0  # to plot, fill nan
         df_frame = pd.DataFrame(ma.humans_current.round(1))
         df_frame.to_csv(csv_file, index=False, header=None, mode='a')
