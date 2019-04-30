@@ -110,7 +110,7 @@ class MotionAnalysis():
         humans_current = humans.reshape(humans.shape[0], humans.shape[1] * humans.shape[2])
         bodies_cog = self.multi_bodies_cog(humans)
 
-        if not self.humans_tracklet:
+        if len(self.humans_tracklet) == 0:
             self.humans_id = np.array(range(len(humans)))
             self.id_max = len(humans)
             self.humans_current = np.concatenate(
