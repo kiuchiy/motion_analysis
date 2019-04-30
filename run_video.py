@@ -193,8 +193,8 @@ def run_video(video, path='', skip_cog=False, skip_track=False, plt_graph=False 
                 hum_track = ma.humans_tracklet[ma.humans_tracklet[:, 1] == hum]
                 hum_track = hum_track.astype(int)
                 ax_graph = plt.subplot2grid(grid_size, (i - fignum * int(i / fignum), fignum + int(i / fignum)))
-                foot = (hum_track[:, 39 * 3 + 2] - hum_track[:, 6 * 3 + 2]) / (hum_track[:, 7 * 3 + 2] - hum_track[:, 6 * 3 + 2])
-                foot[np.isnan(hum_track[:, 6 * 3 + 2])] = np.NaN
+                foot = (hum_track[:, 39 * 3 + 2] - hum_track[:, 21 * 3 + 2]) / (hum_track[:, 24 * 3 + 2] - hum_track[:, 21 * 3 + 2])
+                foot[np.isnan(hum_track[:, 21 * 3 + 2])] = np.NaN
                 line1 = ax_graph.plot(hum_track[:, 0], foot)
                 ax_graph.set_ylim([-0.1, 1.1])
             plt.savefig(os.path.join(path_png_estimated,
