@@ -122,7 +122,6 @@ def run_video(video, path='', skip_cog=False, skip_track=False, plt_graph=False 
         ma.track_humans(frame_no, humans)
         # calculate cog
         bodies_cog = ma.bodies_cog
-        # bodies_cog[np.isnan(bodies_cog[:, :, :])] = 0  # to plot, fill nan
         df_frame = pd.DataFrame(ma.humans_current.round(1))
         df_frame.to_csv(csv_file, index=False, header=None, mode='a')
         time_cog = time.time() - t
@@ -163,10 +162,8 @@ def run_video(video, path='', skip_cog=False, skip_track=False, plt_graph=False 
             if not skip_track:
                 trajectories = np.array([(pos[4 * 3 + 2], pos[4 * 3 + 3]) for pos in hum_track if pos[4 * 3 + 2] > 1])
                 cv2.polylines(img, [trajectories], False, (200, 200, int(hum%3)*30), 3, cv2.LINE_4)
-                # polydotline(img, [trajectories], (200, 200, int(i%3)*30))
                 trajectories = np.array([(pos[7 * 3 + 2], pos[7 * 3 + 3]) for pos in hum_track if pos[7 * 3 + 2] > 1])
                 cv2.polylines(img, [trajectories], False, (int(hum%3)*30, 200, int(hum%3)*30), 3, cv2.LINE_4)
-                # polydotline(img, [trajectories], (200, 200, int(i%3)*30))
 
         # plt graph of cog rate
         if not plt_graph:
@@ -198,7 +195,6 @@ def run_video(video, path='', skip_cog=False, skip_track=False, plt_graph=False 
                 if hum_track.shape[0] > 0:
                     foot = (hum_track[:, 39 * 3 + 2] - hum_track[:, 19 * 3 + 2]) / (hum_track[:, 22 * 3 + 2] - hum_track[:, 19 * 3 + 2])
                     line1 = ax_graph.plot(hum_track[:, 0], foot)
-                    # tmin, tmax = hum_track[0, 0], hum_track[0, 0] + 30
                     p0 = ax_graph.hlines([0.5], tmin, tmax, "blue", linestyles='dashed')  # hlines
                     p1 = ax_graph.hlines([0], tmin, tmax, "blue", linestyles='dashed')  # hlines
                     p2 = ax_graph.hlines([1], tmin, tmax, "blue", linestyles='dashed')  # hlines
@@ -243,7 +239,6 @@ if __name__ == '__main__':
     parser.add_argument('--video', type=str, default='')
     parser.add_argument('--start_frame', type=int, default=0)
     parser.add_argument('--skip_track', type=bool, default=False)
-    # parser.add_argument('--skip_graph', type=bool, default=False)
     parser.add_argument('--plt_graph', type=bool, default=False)
     parser.add_argument('--skip_cog', type=bool, default=False)
     parser.add_argument('--cog_color', type=str, default='black')
