@@ -107,6 +107,9 @@ def run_video(video, path='', skip_cog=False, skip_track=False, plt_graph=False 
             break
         if frame_no == 0:
             h_pxl, w_pxl = image.shape[0], image.shape[1]
+        if frame_no < start_frame:
+            frame_no += 1
+            continue
 
         # estimate pose
         t = time.time()
