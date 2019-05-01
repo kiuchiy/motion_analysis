@@ -45,7 +45,7 @@ def moving_average(a, n=3):
     return ret[n - 1:] / n
 
 
-def run_video(video, path='', skip_cog=False, skip_track=False, plt_graph=False ,cog_color='black', start_frame=0, debug=False):
+def run_video(video, path='', skip_cog=False, skip_track=False, plt_graph=False ,cog_color='black', start_frame=0, ratio_band=0.25, debug=False):
     try:
         logging.shutdown()
         reload(logging)
@@ -204,7 +204,7 @@ def run_video(video, path='', skip_cog=False, skip_track=False, plt_graph=False 
                     ax_graph.legend([str(hum)])
                     ax_graph.set_xticks([int(tmin/15)*15, int(tmin/15)*15 + 15, int(tmax/15)*15])
                     ax_graph.set_xticklabels(list(map(str, [int(tmin/15)/2, int(tmin/15)/2+0.5, int(tmax/15)/2])))
-                    ax_graph.set_ylim([-0.25, 1.25])
+                    ax_graph.set_ylim([-ratio_band, 1+ratio_band])
                     ax_graph.set_xlim([tmin, tmax])
             plt.savefig(os.path.join(path_png_estimated,
                                      video.split('.')[-2] + '{:06d}'.format(frame_no) + ".png"))
@@ -241,6 +241,7 @@ if __name__ == '__main__':
     parser.add_argument('--path', type=str, default="")
     parser.add_argument('--video', type=str, default='')
     parser.add_argument('--start_frame', type=int, default=0)
+    parser.add_argument('--ratio_band', type=float, default=0.25)
     parser.add_argument('--skip_track', type=bool, default=False)
     parser.add_argument('--plt_graph', type=bool, default=False)
     parser.add_argument('--skip_cog', type=bool, default=False)
@@ -248,6 +249,6 @@ if __name__ == '__main__':
     parser.add_argument('--debug', type=bool, default=False)
     args = parser.parse_args()
     run_video(video=args.video, path=args.path, skip_cog=args.skip_cog, skip_track=args.skip_track,
-              plt_graph=args.plt_graph,
+              plt_graph=args.plt_graph, ratio_band=args.ratio_band,
               cog_color=args.cog_color, start_frame=args.start_frame, debug=args.debug)
 
