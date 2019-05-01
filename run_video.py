@@ -88,7 +88,7 @@ def run_video(video, path='', skip_cog=False, skip_track=False, plt_graph=False,
     if cap.isOpened() is False:
         logger.info("ERROR: opening video stream or file")
     caps_fps = cap.get(cv2.CAP_PROP_FPS)
-    ma = MotionAnalysis()
+    ma = MotionAnalysis(fps=caps_fps, start_frame=start_frame)
     # CSV FILE SETTING
     segments = ["Nose", "Neck", "RShoulder", "RElbow", "RWrist", "LShoulder", "LElbow", "LWrist",
                 "MidHip", "RHip", "RKnee", "RAnkle", "LHip", "LKnee", "LAnkle", "background",
@@ -191,7 +191,7 @@ def run_video(video, path='', skip_cog=False, skip_track=False, plt_graph=False,
                 ax_img.set_xticks(ma.humans_current[hum_idx, 19 * 3 + 2])
                 ax_img.set_xticklabels(list((ma.humans_id[hum_idx]).astype(str)))
 
-            tmin, tmax = frame_no - 30, frame_no
+            tmin, tmax = frame_no - caps_fps, frame_no
             for i, hum in enumerate(np.sort(ma.humans_id)):
                 if i == (graph_row * (graph_col - graph_row)):
                     break  # count of humans is over the capacity
@@ -207,8 +207,8 @@ def run_video(video, path='', skip_cog=False, skip_track=False, plt_graph=False,
                     p1 = ax_graph.hlines([0], tmin, tmax, "blue", linestyles='dashed')  # hlines
                     p2 = ax_graph.hlines([1], tmin, tmax, "blue", linestyles='dashed')  # hlines
                     ax_graph.legend([str(hum)])
-                    ax_graph.set_xticks([int(tmin/15)*15, int(tmin/15)*15 + 15, int(tmax/15)*15])
-                    ax_graph.set_xticklabels(list(map(str, [int(tmin/15)/2, int(tmin/15)/2+0.5, int(tmax/15)/2])))
+                    ax_graph.set_xticks([int(tmin/caps_fps*2)*caps_fps/2, int(tmin/caps_fps*2)*caps_fps/2 + caps_fps/2, int(tmax/caps_fps*2)*caps_fps/2])
+                    ax_graph.set_xticklabels(list(map(str, [int(tmin/caps_fps*2)/2, int(tmin/caps_fps*2)/2+0.5, int(tmax/caps_fps*2)/2])))
                     ax_graph.set_ylim([-ratio_band, 1+ratio_band])
                     ax_graph.set_xlim([tmin, tmax])
             plt.savefig(os.path.join(path_png_estimated,

@@ -25,7 +25,7 @@ class MotionAnalysis():
         self.clm_num = None
         self.humans_post = None
         self.id_max = None
-        self.fps = fps
+        self.fps = int(np.ceil(fps))
         self.height = height
         self.weight = weight
     # body_length:
@@ -130,7 +130,7 @@ class MotionAnalysis():
                  humans_current,
                  bodies_cog.reshape(bodies_cog.shape[0],bodies_cog.shape[1] * bodies_cog.shape[2])
                  ), axis=1)
-            self.humans_tracklet = (np.concatenate((self.humans_tracklet[self.humans_tracklet[:, 0] > (frame - 30)],
+            self.humans_tracklet = (np.concatenate((self.humans_tracklet[self.humans_tracklet[:, 0] > (frame - self.fps)],
                                                     self.humans_current)))  # .astype(int)
 
         self.humans_post = humans
