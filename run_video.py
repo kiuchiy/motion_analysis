@@ -127,14 +127,6 @@ def run_video(video, path='', skip_cog=False, skip_track=False, plt_graph=False 
         df_frame.to_csv(csv_file, index=False, header=None, mode='a')
         time_cog = time.time() - t
 
-        # logging to check progress and speed
-        if frame_no % int(caps_fps) == 0:
-            logger.info('calculation of cog in %.4f seconds.' % time_cog)
-            logger.info("Now estimating at:" + str(int(frame_no / caps_fps)) + "[sec]")
-            logger.info('inference in %.4f seconds.' % time_estimation)
-            logger.debug('shape of image: ' + str(image.shape))
-            logger.debug(str(humans))
-            logger.info('shape of humans: ' + str(humans.shape))
         if frame_no % int(caps_fps) == 0:
             # for resetting number of graph.
             hum_count = len(ma.humans_id)
@@ -145,15 +137,6 @@ def run_video(video, path='', skip_cog=False, skip_track=False, plt_graph=False 
         # plot cog & foot lines
         if len(humans.shape) != 0:
             cog_size = (calc_torso_length(humans) / 8).astype(int)
-        # if not skip_cog:
-        #     for i in range(len(bodies_cog)):
-        #         # plot center of gravity
-        #         cv2.circle(img, (bodies_cog[i, 14, 0], bodies_cog[i, 14, 1]), cog_size[i, i], color=(0, 0, 0), thickness=-1)
-        #         # plot foot line
-        #         if bodies_cog[i, 6, 0]:
-        #             dotline(img, (bodies_cog[i, 6, 0], 0), (bodies_cog[i, 6, 0], h_pxl), color=(10, 10, 10), thickness=2)
-        #         if bodies_cog[i, 7, 0]:
-        #             dotline(img, (bodies_cog[i, 7, 0], 0), (bodies_cog[i, 7, 0], h_pxl), color=(10, 10, 10), thickness=2)
 
         for i, hum in enumerate(np.sort(ma.humans_id)):
             hum_track = ma.humans_tracklet[ma.humans_tracklet[:, 1] == hum]
@@ -161,13 +144,19 @@ def run_video(video, path='', skip_cog=False, skip_track=False, plt_graph=False 
             # plot cog & foot lines
             if not skip_cog:
                 cv2.circle(img, (bodies_cog[i, 14, 0], bodies_cog[i, 14, 1]), cog_size[i, i], color=(0, 0, 0), thickness=-1)
+                cv2.ellipse(img, center=(bodies_cog[i, 14, 0], bodies_cog[i, 14, 1]),
+                            axes=(cog_size[i, i], cog_size[i, i]), angle=0, startAngle=0, endAngle=90,
+                            color=(255, 255, 255), thickness=-1, lineType=cv2.LINE_8)
+                cv2.ellipse(img, center=(bodies_cog[i, 14, 0], bodies_cog[i, 14, 1]),
+                            axes=(cog_size[i, i], cog_size[i, i]), angle=0, startAngle=180, endAngle=270,
+                            color=(255, 255, 255), thickness=-1, lineType=cv2.LINE_8)
                 # plot foot line
                 if bodies_cog[i, 6, 0]:
                     dotline(img, (bodies_cog[i, 6, 0], 0), (bodies_cog[i, 6, 0], h_pxl), color=(10, 10, 10), thickness=2)
                 if bodies_cog[i, 7, 0]:
                     dotline(img, (bodies_cog[i, 7, 0], 0), (bodies_cog[i, 7, 0], h_pxl), color=(10, 10, 10), thickness=2)
                 # trajectories of COG
-                trajectories = np.array([(pos[39 * 3 + 2], pos[39 * 3 + 3]) for pos in hum_track if pos[4 * 3 + 2] > 1])
+                trajectories = np.array([(pos[39 * 3 + 2], pos[39 * 3 + 3]) for pos in hum_track if pos[39 * 3 + 2] > 1])
                 cv2.polylines(img, [trajectories], False, (0, 0, 0), 3, cv2.LINE_4)
 
             # plot hands trajectories
@@ -196,7 +185,7 @@ def run_video(video, path='', skip_cog=False, skip_track=False, plt_graph=False 
                 hum_idx = ~np.isnan(ma.humans_current[:, 19 * 3 + 2])
                 ax_img.set_xticks(ma.humans_current[hum_idx, 19 * 3 + 2])
                 ax_img.set_xticklabels(list((ma.humans_id[hum_idx]).astype(str)))
-            # hum_c = ma.humans_current
+
             for i, hum in enumerate(np.sort(ma.humans_id)):
                 if i == (graph_row * (graph_col - graph_row)):
                     break  # count of humans is over the capacity
@@ -208,13 +197,27 @@ def run_video(video, path='', skip_cog=False, skip_track=False, plt_graph=False 
                 if hum_track.shape[0] > 0:
                     foot = (hum_track[:, 39 * 3 + 2] - hum_track[:, 19 * 3 + 2]) / (hum_track[:, 22 * 3 + 2] - hum_track[:, 19 * 3 + 2])
                     line1 = ax_graph.plot(hum_track[:, 0], foot)
+                    tmin, tmax = hum_track[0, 0], hum_track[0, 0]+30
+                    p0 = ax_graph.hlines([0.5], tmin, tmax, "blue", linestyles='dashed')  # hlines
+                    p1 = ax_graph.hlines([0], tmin, tmax, "blue", linestyles='dashed')  # hlines
+                    p2 = ax_graph.hlines([1], tmin, tmax, "blue", linestyles='dashed')  # hlines
                     ax_graph.set_ylim([-0.2, 1.2])
-                    ax_graph.set_xlim([hum_track[0, 0], hum_track[0, 0]+30])
+                    ax_graph.set_xlim([tmin, tmax])
                     ax_graph.legend([str(hum)])
             plt.savefig(os.path.join(path_png_estimated,
                                      video.split('.')[-2] + '{:06d}'.format(frame_no) + ".png"))
             plt.close()
             plt.clf()
+
+        # logging to check progress and speed
+        if frame_no % int(caps_fps) == 0:
+            logger.info('calculation of cog in %.4f seconds.' % time_cog)
+            logger.info("Now estimating at:" + str(int(frame_no / caps_fps)) + "[sec]")
+            logger.info('inference in %.4f seconds.' % time_estimation)
+            logger.debug('shape of image: ' + str(image.shape))
+            logger.debug(str(humans))
+            logger.info('shape of humans: ' + str(humans.shape))
+
         # before increment, renew some args
         frame_no += 1
         gc.collect()
