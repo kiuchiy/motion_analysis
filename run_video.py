@@ -45,7 +45,8 @@ def moving_average(a, n=3):
     return ret[n - 1:] / n
 
 
-def run_video(video, path='', skip_cog=False, skip_track=False, plt_graph=False ,cog_color='black', start_frame=0, ratio_band=0.25, debug=False):
+def run_video(video, path='', skip_cog=False, skip_track=False, plt_graph=False, graph_num=0,
+              cog_color='black', start_frame=0, ratio_band=0.25, debug=False):
     try:
         logging.shutdown()
         reload(logging)
@@ -174,8 +175,12 @@ def run_video(video, path='', skip_cog=False, skip_track=False, plt_graph=False 
             cv2.imwrite(os.path.join(path_png_estimated,
                                      video.split('.')[-2] + '{:06d}'.format(frame_no) + ".png"), img)
         else:
-            graph_row = 6  # if hum_count > 6 else 4
-            graph_col = graph_row + 2 + int((hum_count-graph_row if hum_count-graph_row > 0 else 0)/graph_row)
+            if graph_num:
+                graph_row = graph_num if graph_num < 6 else 6
+                graph_col = graph_num + (1 if graph_num < 6 else int(graph_num/6)+1)
+            else:
+                graph_row = 6  # if hum_count > 6 else 4
+                graph_col = graph_row + 2 + int((hum_count-graph_row if hum_count-graph_row > 0 else 0)/graph_row)
             fig = plt.figure(figsize=(16, 8))
             grid_size = (graph_row, graph_col)
             ax_img = plt.subplot2grid(grid_size, (0, 0), rowspan=graph_row, colspan=graph_row)
@@ -241,6 +246,7 @@ if __name__ == '__main__':
     parser.add_argument('--path', type=str, default="")
     parser.add_argument('--video', type=str, default='')
     parser.add_argument('--start_frame', type=int, default=0)
+    parser.add_argument('--graph_num', type=int, default=0)
     parser.add_argument('--ratio_band', type=float, default=0.25)
     parser.add_argument('--skip_track', type=bool, default=False)
     parser.add_argument('--plt_graph', type=bool, default=False)
@@ -249,6 +255,6 @@ if __name__ == '__main__':
     parser.add_argument('--debug', type=bool, default=False)
     args = parser.parse_args()
     run_video(video=args.video, path=args.path, skip_cog=args.skip_cog, skip_track=args.skip_track,
-              plt_graph=args.plt_graph, ratio_band=args.ratio_band,
+              plt_graph=args.plt_graph, ratio_band=args.ratio_band, graph_num=args.graph_num,
               cog_color=args.cog_color, start_frame=args.start_frame, debug=args.debug)
 
