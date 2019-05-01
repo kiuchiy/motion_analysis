@@ -186,6 +186,7 @@ def run_video(video, path='', skip_cog=False, skip_track=False, plt_graph=False 
                 ax_img.set_xticks(ma.humans_current[hum_idx, 19 * 3 + 2])
                 ax_img.set_xticklabels(list((ma.humans_id[hum_idx]).astype(str)))
 
+            tmin, tmax = frame_no - 30, frame_no
             for i, hum in enumerate(np.sort(ma.humans_id)):
                 if i == (graph_row * (graph_col - graph_row)):
                     break  # count of humans is over the capacity
@@ -197,13 +198,15 @@ def run_video(video, path='', skip_cog=False, skip_track=False, plt_graph=False 
                 if hum_track.shape[0] > 0:
                     foot = (hum_track[:, 39 * 3 + 2] - hum_track[:, 19 * 3 + 2]) / (hum_track[:, 22 * 3 + 2] - hum_track[:, 19 * 3 + 2])
                     line1 = ax_graph.plot(hum_track[:, 0], foot)
-                    tmin, tmax = hum_track[0, 0], hum_track[0, 0]+30
+                    # tmin, tmax = hum_track[0, 0], hum_track[0, 0] + 30
                     p0 = ax_graph.hlines([0.5], tmin, tmax, "blue", linestyles='dashed')  # hlines
                     p1 = ax_graph.hlines([0], tmin, tmax, "blue", linestyles='dashed')  # hlines
                     p2 = ax_graph.hlines([1], tmin, tmax, "blue", linestyles='dashed')  # hlines
-                    ax_graph.set_ylim([-0.2, 1.2])
+                    ax_graph.set_ylim([-0.25, 1.25])
                     ax_graph.set_xlim([tmin, tmax])
                     ax_graph.legend([str(hum)])
+                    ax_graph.set_xticks([tmin, tmin + 15, tmax])
+                    ax_graph.set_xticklabels(list(map(str, [tmin/30, tmin/30+0.5, tmax/30])))
             plt.savefig(os.path.join(path_png_estimated,
                                      video.split('.')[-2] + '{:06d}'.format(frame_no) + ".png"))
             plt.close()
