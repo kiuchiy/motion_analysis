@@ -203,10 +203,10 @@ def run_video(video, path='', skip_cog=False, skip_track=False, plt_graph=False 
                     p1 = ax_graph.hlines([0], tmin, tmax, "blue", linestyles='dashed')  # hlines
                     p2 = ax_graph.hlines([1], tmin, tmax, "blue", linestyles='dashed')  # hlines
                     ax_graph.set_ylim([-0.25, 1.25])
-                    ax_graph.set_xlim([tmin, tmax])
                     ax_graph.legend([str(hum)])
                     ax_graph.set_xticks([int(tmin/30)*30, int(tmin/30)*30 + 15, int(tmax/30)*30])
                     ax_graph.set_xticklabels(list(map(str, [int(tmin/30), int(tmin/30)+0.5, int(tmax/30)])))
+                    ax_graph.set_xlim([tmin, tmax])
             plt.savefig(os.path.join(path_png_estimated,
                                      video.split('.')[-2] + '{:06d}'.format(frame_no) + ".png"))
             plt.close()
