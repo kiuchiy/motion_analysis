@@ -116,7 +116,7 @@ def run_video(video, path='', skip_cog=False, skip_track=False, plt_graph=False,
         t = time.time()
         datum = op.Datum()
         datum.cvInputData = image
-        opWrapper.emplaceAndPop([datum])
+        opWrapper.emplaceAndPop(op.VectorDatum([datum]))
         time_estimation = time.time() - t
         # keypoints
         humans = datum.poseKeypoints
